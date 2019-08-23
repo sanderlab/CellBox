@@ -10,9 +10,9 @@ import shutil
 import argparse
 
 parser = argparse.ArgumentParser(description='CellBox main script')
-parser.add_argument("--experiment_config_path", required=True, type=str, help="Path of experiment config")
-parser.add_argument('--working_index', default=0)
-parser.add_argument('--drug_index', required=False)
+parser.add_argument('-config', '--experiment_config_path', required=True, type=str, help="Path of experiment config")
+parser.add_argument('-i', '--working_index', default=0)
+parser.add_argument('-drug', '--drug_index', required=False)
 master_args = parser.parse_args()
 
 def set_seed(seed):
@@ -67,14 +67,14 @@ if __name__ == '__main__':
     except:
         pass
 
-    cfg.dataset = prepare_workdir(cfg)
-
     try:
         set_seed(random_seed)
     except:
         seed = int(working_index) + 1000
         set_seed(seed)
-
+    
+    cfg.dataset = prepare_workdir(cfg)
+  
     logger = pertbio.utils.time_logger(time_logger_step = 1, hierachy = 3)
     args = cfg
     for i, stage in enumerate(cfg.stages):

@@ -20,7 +20,7 @@ pertbio.VERSION
 To quickly start an example model training, in project folder do
 
 ```
-python script/main.py --experiment_config_path=configs/example.cfg.json
+python scripts/main.py --experiment_config_path=configs/example.cfg.json
 ```
 
 # Project Structure
@@ -47,7 +47,7 @@ python script/main.py --experiment_config_path=configs/example.cfg.json
 ### __Step 2: Use main.py to construct models using random partition of dataset__
 
 ```
-python script/main.py --experiment_config_path=configs/random_partition.cfg.json
+python scripts/main.py --experiment_config_path=configs/random_partition.cfg.json
 ```
 
 Note: always run the script in the root folder.
@@ -57,7 +57,7 @@ Note: always run the script in the root folder.
 A random seed can also be assigned by using argument --working_index
 
 ```
-python script/main.py --experiment_config_path=configs/random_partition.cfg.json --working_index=1234
+python scripts/main.py --experiment_config_path=configs/random_partition.cfg.json --working_index=1234
 ```
 
 

@@ -3,7 +3,7 @@
   "experiment_type": "random partition",
   "model_prefix": "b11",
   "seed": 1234,
-  "iterations": 1000,
+  "iterations": 2000,
   "save_iterations": 50,
   "dT": 0.1,
   "pert_file": "data/pert.csv",

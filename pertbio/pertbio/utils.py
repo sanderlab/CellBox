@@ -2,18 +2,6 @@ import tensorflow as tf
 import numpy as np
 import time
 
-'''
-args=n_x, n_protein_nodes, n_activity_nodes, n_T, dT, tail_iters = 20, normalize_loss = False, normalize_to = None
-
-Args:
-    n_x (int): number of all nodes
-    n_protein_nodes (int): number of protein (antibodies measured) nodes
-    n_activity_nodes (int): number of non-drug nodes (protein + phenotypic nodes)
-    n_T (int): number of time step in integration calculation
-    dT (float): value of time step in integration calculation
-
-'''
-
 def loss(x_gold, x_hat,l1, W):
     with tf.variable_scope("loss", reuse=True):
         loss_mse = tf.reduce_mean(tf.square((x_gold - x_hat)))
@@ -27,9 +15,10 @@ def optimize(loss, lr, optimizer=tf.train.AdamOptimizer):
     Args:
         loss (float): training loss, mean squared error + L1 regularization term
         lr (float): placeholder for learning rate
-
+        optimizer: default tf.train.AdamOptimizer
     Returns:
-        opt_op (optimizer): optimize the training loss loss1
+        opt_op (optimizer): op to optimize the training loss
+        loss (loss): training loss, including regularization if applicable
     """
     with tf.variable_scope("optimization", reuse=tf.AUTO_REUSE):
         opt = optimizer(lr)

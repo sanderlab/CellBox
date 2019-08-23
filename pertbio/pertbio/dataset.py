@@ -79,7 +79,6 @@ def loo(cfg, singles):
 
 
 def random_partition(cfg):
-    # Define Number of Conditions/Experiments
     nexp, n_x = cfg.pert.shape
     nvalid = int(nexp * cfg.trainset_ratio)
     ntrain = int(nvalid * cfg.validset_ratio)

@@ -12,11 +12,14 @@ def train_substage(model, dataset, sess, lr_val, l1lamda, iterations, n_iter_buf
     Training function that does one stage of training. The stage training can be repeated and modified to give better training result.
 
     Args:
+        model (CellBox): an CellBox instance
+        dataset (dict): including "node_index", "pert_train", "pert_valid", "pert_test",
+                        "train_data", "valid_data", "test_data"
+        sess (tf.Session): current session, need reinitialization for every nT
         lr_val (float): learning rate (read in from config file)
         l1lamda (float): l1 regularization weight
         iterations (int): number of iterations
         n_iter_buffer (int): training tolerance
-
     """
 
     stages = glob.glob("*best*.csv")

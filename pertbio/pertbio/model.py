@@ -18,7 +18,6 @@ class CellBox:
         # Initialization
         self.args = args
         self.n_x = args.n_x
-        # TODO: Check np.ones or np.zeros for x_0
         self.x_0 = tf.constant(np.zeros((self.n_x, 1)), name="x_init", dtype=tf.float32)
         self.W, self.alpha, self.eps = get_variables(
                     self.n_x, args.n_protein_nodes, args.n_activity_nodes)
@@ -49,11 +48,11 @@ class CellBox:
         Core model formulation
 
         Args:
-            x (float): input x(t)
+            x (placeholder, float tensor): input x(t), shape [n_x]
+            t_mu (placeholder: float tensor): perturbation strength, shape [n_x]
 
         Returns:
-            dXdt (float): time derivative of input x: dxdt(t)
-
+            dXdt (float tensor): time derivative of input x: dxdt(t)
         """
         with tf.variable_scope("dXdT"):
             dXdt = self.eps * tf.tanh(tf.matmul(self.W, x) + t_mu) - self.alpha * x
@@ -65,10 +64,11 @@ class CellBox:
                     using Heun's methods
 
         Args:
-            t_mu: perturbation strengths
+            t_mu (placeholder: float tensor): perturbation strength, shape [n_x]
+            test_convergence (bool): used for assert model convergence
 
         Returns:
-            x (reshaped into n_x): float, predicted value of input data
+            x (float tensor): predicted value of input data, shape [n_x]
 
         """
         x = self.x_0
@@ -116,18 +116,16 @@ def get_variables(n_x, n_protein_nodes, n_activity_nodes):
         n_activity_nodes (int): number of non-drug nodes (protein + phenotypic nodes)
 
     Returns:
-        W (tf.Variable): interaction matrix with constraints enforced
-        alpha (tf.Variable): alpha, shape: [self.n_x, 1]
-        eps (tf.Variable): eps, shape: [self.n_x, 1]
+        W (tf.Variable): interaction matrix with constraints enforced, , shape: [n_x, n_x]
+        alpha (tf.Variable): alpha, shape: [n_x, 1]
+        eps (tf.Variable): eps, shape: [n_x, 1]
     '''
 
     with tf.variable_scope("initialization", reuse=True):
         # TODO: check to see if it make sense to change tf.Variables to tf.get_variables
         W = tf.Variable(np.random.normal(0.01, size=(n_x, n_x)), name="W", dtype=tf.float32)
         eps = tf.Variable(np.ones((n_x, 1)), name="eps", dtype=tf.float32)
-        # TODO: Check tf.constant or tf.Variable for alpha
         alpha = tf.Variable(np.ones((n_x, 1)), name="alpha", dtype=tf.float32)
-        # alpha = tf.constant(np.ones((self.n_x, 1)), name="alpha", dtype=tf.float32)
 
         '''Enforce constraints  (i: recipient)
            no self regulation wii=0
@@ -146,7 +144,6 @@ def get_variables(n_x, n_protein_nodes, n_activity_nodes):
 										n_x-n_activity_nodes])
         W = W_mask * W
 
-        #TODO: check together with definition of alpha
         alpha = tf.nn.softplus(alpha)
         eps = tf.nn.softplus(eps)
     return W, alpha, eps

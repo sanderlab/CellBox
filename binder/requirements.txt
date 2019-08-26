@@ -1,5 +1,6 @@
 -i https://pypi.org/simple
 ./pertbio
+setuptools==39.1.0
 absl-py==0.7.1
 astor==0.8.0
 cycler==0.10.0
@@ -8,7 +9,6 @@ grpcio==1.21.1
 kiwisolver==1.1.0
 markdown==3.1.1
 matplotlib==3.1.0
-numpy==1.16.4
 pandas==0.24.2
 protobuf==3.8.0
 pycairo==1.18.1
@@ -20,7 +20,6 @@ scipy==1.3.0
 seaborn==0.9.0
 six==1.12.0
 tensorboard==1.9.0
-tensorflow==1.9.0
 termcolor==1.1.0
 werkzeug==0.15.4
 wheel==0.33.4 ; python_version >= '3'

@@ -16,12 +16,14 @@ import pertbio
 pertbio.VERSION
 ```
 
-
-To quickly start an example model training, in project folder do
-
+To quickly start an example model training, use Binder
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dfci/CellBox/master)
+New dropdown -> Terminal
 ```
-python scripts/main.py --experiment_config_path=configs/example.cfg.json
+python scripts/main.py -config=configs/example.cfg.json
 ```
+
+Alternatively, in project folder, do the same command
 
 # Project Structure
 
@@ -46,22 +48,23 @@ python scripts/main.py --experiment_config_path=configs/example.cfg.json
 
 ### __Step 2: Use main.py to construct models using random partition of dataset__
 
+The experiment type configuration file is specified by --experiment_config_path OR -config
+
 ```
-python scripts/main.py --experiment_config_path=configs/random_partition.cfg.json
+python scripts/main.py -config=configs/random_partition.cfg.json
 ```
 
 Note: always run the script in the root folder.
 
 
-
-A random seed can also be assigned by using argument --working_index
+A random seed can also be assigned by using argument --working_index OR -i
 
 ```
-python scripts/main.py --experiment_config_path=configs/random_partition.cfg.json --working_index=1234
+python scripts/main.py -config=configs/random_partition.cfg.json -i=1234
 ```
 
 
-When training with leave-one-out validation, make sure to specify the drug index to leave out from training.
+When training with leave-one-out validation, make sure to specify the drug index --drug_index OR -drug to leave out from training.
 
 
 ### __Step 3: Analyze result files__

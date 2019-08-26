@@ -14,7 +14,7 @@ setuptools.setup(
     description="A mechine learning framework with a mathematical core of differential equations to train network models on perturbation-response data",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://bitbucket.org/boyuan96/pert_tensorflow",
+    url="https://github.com/dfci/CellBox",
     packages=['pertbio'],
     python_requires='>=3.6',
     install_requires=['tensorflow==1.9.0', 'numpy==1.14.5', 'pandas'],

@@ -1,3 +1,5 @@
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dfci/CellBox/master)
+
 # Installation
 
 In pertbio folder run:
@@ -8,7 +10,7 @@ python3.6 setup.py install
 
 Only python3.6 supported. Anaconda or pipenv is recommended to create python environment
 
-# Quick start
+# Quick Start
 Now you can test if the installation is successful
 
 ```
@@ -16,9 +18,14 @@ import pertbio
 pertbio.VERSION
 ```
 
-To quickly start an example model training, use Binder
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dfci/CellBox/master)
-New dropdown -> Terminal
+## Quick Start with Binder 
+
+Easily try PertBio online with Binder 
+
+1. Go to: https://mybinder.org/v2/gh/dfci/CellBox/master
+2. From the New dropdown, click Terminal 
+3. Run the following command: 
+
 ```
 python scripts/main.py -config=configs/example.cfg.json
 ```

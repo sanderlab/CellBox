@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import time
+import hashlib
 
 def loss(x_gold, x_hat,l1, W):
     with tf.variable_scope("loss", reuse=True):
@@ -37,3 +38,9 @@ class time_logger():
             print("#" * 4 * self.hierachy, " ", s, "  --time elapsed: %.2f"%(time.time() - self.time))
             self.time = time.time()
             self.step_count += 1
+
+def md5(key):
+    '''
+    returns a hashed with md5 string of the key
+    '''
+    return hashlib.md5(key.encode()).hexdigest()

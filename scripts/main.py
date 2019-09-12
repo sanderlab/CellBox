@@ -29,8 +29,8 @@ def prepare_workdir(cfg):
 
     # Create Output Folder
     try:
-        date = datetime.date.today().strftime("%y%m%d")
-        experiment_path = 'results/{}_{}'.format(cfg.experiment_id, date)
+        md5 = pertbio.utils.md5(str(vars(cfg)))
+        experiment_path = 'results/{}_{}'.format(cfg.experiment_id, md5)
         os.makedirs(experiment_path)
     except:
         pass
@@ -72,9 +72,9 @@ if __name__ == '__main__':
     except:
         seed = int(working_index) + 1000
         set_seed(seed)
-    
+
     cfg.dataset = prepare_workdir(cfg)
-  
+
     logger = pertbio.utils.time_logger(time_logger_step = 1, hierachy = 3)
     args = cfg
     for i, stage in enumerate(cfg.stages):

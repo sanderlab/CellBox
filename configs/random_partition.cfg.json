@@ -16,6 +16,7 @@
   "n_x" : 99,
   "trainset_ratio": 0.7,
   "validset_ratio": 0.8,
+  "batchsize": 40,
   "dropout_percent": 0.8,
   "loss_min": 1000,
   "tail_iters": 20,

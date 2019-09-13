@@ -35,12 +35,16 @@ def train_substage(model, dataset, sess, lr_val, l1lamda, iterations, n_iter_buf
     n_unchanged = 0
     for i in range(iterations):
         t0 = time.clock()
-        drop_out_index = np.random.choice(range(dataset['train_data'].shape[0]), args.n_s1, replace = False)
+
+        # batch_index = np.random.choice(range(dataset['train_data'].shape[0]), args.n_s1, replace = False)
+        # by args.dropout_percent
+        batch_index = np.random.choice(range(dataset['train_data'].shape[0]), args.batchsize, replace = False)
+        # by batchsize
 
         # Feeding data
         train_set = {
-            model.x_gold: dataset['train_data'].iloc[drop_out_index,:],
-            model.mu: dataset['pert_train'].iloc[drop_out_index,:],
+            model.x_gold: dataset['train_data'].iloc[batch_index,:],
+            model.mu: dataset['pert_train'].iloc[batch_index,:],
             model.lr: lr_val,
             model.l1_lambda: l1lamda
         }

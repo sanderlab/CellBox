@@ -17,6 +17,7 @@
   "trainset_ratio": 0.7,
   "validset_ratio": 0.8,
   "dropout_percent": 0.8,
+  "batchsize": 40,
   "loss_min": 1000,
   "tail_iters": 20,
   "ckpt_name": "model11.ckpt",

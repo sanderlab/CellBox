@@ -36,5 +36,6 @@
     "nT": 400,
     "sub_stages":[
         {"lr_val": 0.001,"l1lamda": 0.00001}
-    ]}]
+    ]}],
+    "export_verbose": 1
 }

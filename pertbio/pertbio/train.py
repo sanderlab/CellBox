@@ -138,7 +138,7 @@ class Screenshot(dict):
     def set_verbose(self, args):
         try:
             self.verbose = args.verbose # 0: no output, 1: params only, 2: params + prediction
-        else:
+        except:
             self.verbose = 2 # default verbose: 2
 
     def screenshot(self, sess, model, substage_i, node_index, loss_min, args):

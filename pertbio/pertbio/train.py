@@ -106,7 +106,7 @@ def train_model(args):
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
     try:
-        saver.restore(sess, args.ckpt_name)
+        args.saver.restore(sess, './'+args.ckpt_name)
         print('Load existing model at {}...'.format(args.ckpt_name))
     except:
         print('Create new model at {}...'.format(args.ckpt_name))

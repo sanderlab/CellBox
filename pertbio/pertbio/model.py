@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+import pertbio.kernel
 from pertbio.utils import loss, optimize
 
 class CellBox:
@@ -24,6 +25,11 @@ class CellBox:
         self.mu = tf.placeholder(tf.float32, [None, self.n_x])
         self.x_gold = tf.placeholder(tf.float32, [None, self.n_x])
         # Feed forward
+        self.envelop = pertbio.kernel.get_envelop(args)
+        self.envelop.W, self.envelop.alpha, self.envelop.eps = self.get_params()
+
+        self.ode_solver = pertbio.kernel.get_ode_solver(args)
+        self._dXdt = pertbio.kernel.get_dXdt(args, self.envelop)
         self.convergence_metric , self.xhat = self.forward(self.mu)
         # Loss and training ops
         self.l1_lambda = tf.placeholder(tf.float32)
@@ -35,76 +41,25 @@ class CellBox:
     def get_params(self):
         return self.W, self.alpha, self.eps
 
+
+    def _simu(self, t_mu):
+        t_mu = tf.reshape(t_mu, [self.n_x, 1])
+        xs = self.ode_solver(self.x_0, t_mu, self.args.dT, self.args.n_T,
+                            self.envelop, self._dXdt, self.args)
+
+        tail_iters = self.args.tail_iters
+        n_last_iters = int(self.args.n_T - tail_iters)  # the last 20% iters were used for convergence test
+        xs = tf.reshape(xs, [-1, self.n_x])[-n_last_iters:]
+        mean, sd = tf.nn.moments(xs, axes = 0)
+        dxdt = tf.reshape(
+                        self._dXdt(tf.reshape(xs[-1], [-1,1]), t_mu, self.envelop)
+                      , [-1])
+        return tf.reshape(xs[-1], [self.n_x]), tf.concat([mean, sd, dxdt], axis = 0)
+
     def forward(self, mu):
-        convergence_metric = tf.map_fn(fn = (lambda mu_i: self._simu(mu_i,
-                            test_convergence = True)), elems=mu,
-                            dtype=None)
-        xhat = tf.map_fn(fn = (lambda mu_i: self._simu(mu_i)), elems=mu,
-                            dtype=None)
+        xhat, convergence_metric = tf.map_fn(fn = (lambda mu_i: self._simu(mu_i[0])),
+                                       elems = (mu, mu), dtype=(tf.float32, tf.float32))
         return convergence_metric, xhat
-
-    def _dXdt(self, x, t_mu):
-        """
-        Core model formulation
-
-        Args:
-            x (placeholder, float tensor): input x(t), shape [n_x]
-            t_mu (placeholder: float tensor): perturbation strength, shape [n_x]
-
-        Returns:
-            dXdt (float tensor): time derivative of input x: dxdt(t)
-        """
-        with tf.variable_scope("dXdT"):
-            dXdt = self.eps * tf.tanh(tf.matmul(self.W, x) + t_mu) - self.alpha * x
-        return dXdt
-
-    def _simu(self, t_mu, test_convergence = False):
-        """
-        ODE solver: given current model, calculate the numerical simulation
-                    using Heun's methods
-
-        Args:
-            t_mu (placeholder: float tensor): perturbation strength, shape [n_x]
-            test_convergence (bool): used for assert model convergence
-
-        Returns:
-            x (float tensor): predicted value of input data, shape [n_x]
-
-        """
-        x = self.x_0
-        n_x = self.n_x
-        n_T = self.args.n_T
-        dT = self.args.dT
-        t_mu = tf.reshape(t_mu, [n_x, 1])
-        if (test_convergence):
-            tail_iters = self.args.tail_iters
-            xs = x
-            n_last_iters = int(n_T - tail_iters)  # the last 20% iters were used for convergence test
-            for i in range(n_T):
-                """ Integrate with Heun's Method """
-                dXdt_current = self._dXdt(x, t_mu)
-                dXdt_next = self._dXdt(x + dT * dXdt_current, t_mu)
-                x = x + dT * 0.5 * (dXdt_current + dXdt_next)
-                if(i>=n_last_iters):
-                    xs = tf.concat([xs, x], axis = 0)
-            xs = tf.reshape(xs, [-1, n_x])[1:] # drop the x_0
-            mean, sd = tf.nn.moments(xs, axes = 0)
-            dxdt = tf.reshape(self._dXdt(tf.reshape(xs[-1], [-1,1]), t_mu), [-1])
-
-            if (tail_iters == 0):
-                return xs
-            else:
-                return tf.concat([mean, sd, dxdt], axis = 0)
-
-        else:
-            # TODO: clear out pycharm syntax issues
-            for i in range(n_T):
-                """ Integrate with Heun's Method """
-                dXdt_current = self._dXdt(x, t_mu)
-                dXdt_next = self._dXdt(x + dT * dXdt_current, t_mu)
-                x = x + dT * 0.5 * (dXdt_current + dXdt_next)
-
-            return tf.reshape(x, [self.n_x])
 
 
 def get_variables(n_x, n_protein_nodes, n_activity_nodes):

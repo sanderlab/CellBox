@@ -72,6 +72,7 @@ if __name__ == '__main__':
     except:
         seed = int(working_index) + 1000
         set_seed(seed)
+    print(vars(cfg))
 
     cfg.dataset = prepare_workdir(cfg)
 

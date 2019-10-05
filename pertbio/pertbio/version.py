@@ -1,4 +1,4 @@
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 VERSION = __version__
 
 def get_msg():
@@ -44,6 +44,13 @@ def get_msg():
 
         version 0.1.0
         -- Aug 21, 2019 --
-        * Re-structure codes for publish."""
+        * Re-structure codes for publish.
+
+        version 0.1.1
+        -- Oct 4, 2019 --
+        * Add new kinetics
+        * Add new ODE solvers
+        * Add new envelop forms
+        """
 
     print(changelog)

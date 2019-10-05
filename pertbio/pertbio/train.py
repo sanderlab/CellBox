@@ -7,7 +7,7 @@ from pertbio.model import CellBox
 from pertbio.utils import time_logger
 import time
 
-def train_substage(model, dataset, sess, lr_val, l1lamda, iterations, n_iter_buffer, args):
+def train_substage(model, dataset, sess, lr_val, l1lamda, iterations, n_iter_buffer, n_iter_patience, args):
     """
     Training function that does one stage of training. The stage training can be repeated and modified to give better training result.
 
@@ -28,9 +28,7 @@ def train_substage(model, dataset, sess, lr_val, l1lamda, iterations, n_iter_buf
     except:
         substage_i = 1
 
-    loss_min = args.loss_min
-    best_params = Screenshot()
-    best_params.set_verbose(args)
+    best_params = Screenshot(args, n_iter_buffer)
 
     n_unchanged = 0
     for i in range(iterations):
@@ -66,11 +64,11 @@ def train_substage(model, dataset, sess, lr_val, l1lamda, iterations, n_iter_buf
         loss_test_mse_i = sess.run(model.loss_mse, feed_dict= test_set)
 
         # Evaluation
-        if loss_valid_i < loss_min:
-            loss_min = loss_valid_i
+        new_loss = best_params.avg_n_iters_loss(loss_valid_i)
+        if  new_loss < best_params.loss_min:
             n_unchanged = 0
             best_params.screenshot(sess, model, substage_i, args = args,
-                             node_index = args.dataset['node_index'], loss_min = loss_min)
+                             node_index = args.dataset['node_index'], loss_min = new_loss)
 
         elif n_unchanged < n_iter_buffer:
             n_unchanged+=1
@@ -121,8 +119,13 @@ def train_model(args):
             n_iter = substage['n_iter']
         except:
             n_iter = args.iterations
+        try:
+            n_iter_patience = substage['n_iter_patience']
+        except:
+            n_iter_patience = args.n_iter_patience
         train_substage(cellbox, args.dataset, sess, substage['lr_val'], substage['l1lamda'],
-                    iterations = n_iter, n_iter_buffer = n_iter_buffer, args = args)
+                    iterations = n_iter, n_iter_buffer = n_iter_buffer,
+                    n_iter_patience = n_iter_patience, args = args)
 
     ### Terminate session
     sess.close()
@@ -135,11 +138,24 @@ def save_model(saver, model, sess, path):
 
 class Screenshot(dict):
 
-    def set_verbose(self, args):
+    def __init__(self, args, n_iter_buffer):
+        # initialize loss_min
+        self.loss_min = args.loss_min
+        # initialize tuning_metric
+        self.saved_losses = [self.loss_min]
+        self.n_iter_buffer = n_iter_buffer
+        # initialize verbose
         try:
             self.verbose = args.verbose # 0: no output, 1: params only, 2: params + prediction
         except:
+            print("Undefined verbose. Using default: 2.")
             self.verbose = 2 # default verbose: 2
+
+    def avg_n_iters_loss(self, new_loss):
+        self.saved_losses = self.saved_losses + [new_loss]
+        self.saved_losses = self.saved_losses[-self.n_iter_buffer:]
+        return sum(self.saved_losses)/len(self.saved_losses)
+
 
     def screenshot(self, sess, model, substage_i, node_index, loss_min, args):
 

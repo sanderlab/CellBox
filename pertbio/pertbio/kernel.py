@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 
 
 def get_envelop(args):
@@ -30,8 +31,8 @@ def get_dXdt(args, envelop):
         return lambda x, t_mu, envelop: envelop.eps * (envelop(weighted_sum(x)) + t_mu) - envelop.alpha * x
     elif args.envelop == 2:
         # epsilon*phi(Sigma)+psi*u-alpha*x
-        psi = tf.Variable(np.ones((n_x, 1)), name="psi", dtype=tf.float32)
-        return lambda x, t_mu, envelop: envelop.eps * envelop(weighted_sum(x)) + envelop.psi*t_mu - envelop.alpha * x
+        psi = tf.Variable(np.ones((args.n_x, 1)), name="psi", dtype=tf.float32)
+        return lambda x, t_mu, envelop: envelop.eps * envelop(weighted_sum(x)) + psi*t_mu - envelop.alpha * x
     else:
         raise Exception("Illegal envelop type. Choose from [1,2,3].")
 

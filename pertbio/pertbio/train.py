@@ -65,12 +65,12 @@ def train_substage(model, dataset, sess, lr_val, l1lamda, iterations, n_iter_buf
 
         # Evaluation
         new_loss = best_params.avg_n_iters_loss(loss_valid_i)
-        if  new_loss < best_params.loss_min:
+        if new_loss < best_params.loss_min:
             n_unchanged = 0
             best_params.screenshot(sess, model, substage_i, args = args,
                              node_index = args.dataset['node_index'], loss_min = new_loss)
 
-        elif n_unchanged < n_iter_buffer:
+        elif n_unchanged < n_iter_patience:
             n_unchanged+=1
         else:
             break

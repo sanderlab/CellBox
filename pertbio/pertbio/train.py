@@ -18,8 +18,9 @@ def train_substage(model, dataset, sess, lr_val, l1lamda, iterations, n_iter_buf
         sess (tf.Session): current session, need reinitialization for every nT
         lr_val (float): learning rate (read in from config file)
         l1lamda (float): l1 regularization weight
-        iterations (int): number of iterations
-        n_iter_buffer (int): training tolerance
+        n_iter (int): number of iterations
+        n_iter_buffer (int): training loss window
+        n_iter_patience (int): training loss tolerance
     """
 
     stages = glob.glob("*best*.csv")
@@ -123,7 +124,7 @@ def train_model(args):
         try:
             n_iter = substage['n_iter']
         except:
-            n_iter = args.iterations
+            n_iter = args.n_iter
         try:
             n_iter_patience = substage['n_iter_patience']
         except:
@@ -145,16 +146,16 @@ class Screenshot(dict):
 
     def __init__(self, args, n_iter_buffer):
         # initialize loss_min
-        self.loss_min = args.loss_min
+        self.loss_min = 1000
         # initialize tuning_metric
         self.saved_losses = [self.loss_min]
         self.n_iter_buffer = n_iter_buffer
         # initialize verbose
         try:
-            self.verbose = args.verbose # 0: no output, 1: params only, 2: params + prediction
+            self.export_verbose = args.export_verbose # 0: no output, 1: params only, 2: params + prediction
         except:
             print("Undefined verbose. Using default: 2.")
-            self.verbose = 2 # default verbose: 2
+            self.export_verbose = 2 # default verbose: 2
 
     def avg_n_iters_loss(self, new_loss):
         self.saved_losses = self.saved_losses + [new_loss]
@@ -167,14 +168,14 @@ class Screenshot(dict):
         self.substage_i = substage_i
         self.loss_min = loss_min
         # Save the variables to disk.
-        if self.verbose > 0:
+        if self.export_verbose > 0:
             W_screenshot, alpha_screenshot, eps_screenshot = sess.run(model.get_params())
             w_values = pd.DataFrame(W_screenshot, columns=node_index[0], index=node_index[0])
             alpha_values = pd.DataFrame(alpha_screenshot, index=node_index[0])
             eps_values = pd.DataFrame(eps_screenshot, index=node_index[0])
             self.update({'W': w_values, 'alpha': alpha_values, 'eps_values': eps_values})
 
-        if self.verbose > 1:
+        if self.export_verbose > 1:
             y_hat = sess.run(model.xhat, feed_dict = {model.mu: args.dataset['pert_test']})
             y_hat = pd.DataFrame(y_hat, columns=node_index[0])
             self.update({'y_hat': y_hat})

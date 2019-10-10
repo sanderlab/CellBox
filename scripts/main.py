@@ -66,12 +66,11 @@ if __name__ == '__main__':
         cfg.drug_index = master_args.drug_index
     except:
         pass
-
     try:
-        set_seed(random_seed)
+        seed = int(working_index) + cfg.seed
     except:
         seed = int(working_index) + 1000
-        set_seed(seed)
+    set_seed(seed)
     print(vars(cfg))
 
     cfg.dataset = prepare_workdir(cfg)

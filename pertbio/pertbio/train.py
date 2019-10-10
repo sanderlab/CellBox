@@ -65,6 +65,11 @@ def train_substage(model, dataset, sess, lr_val, l1lamda, iterations, n_iter_buf
 
         # Evaluation
         new_loss = best_params.avg_n_iters_loss(loss_valid_i)
+        if args.export_verbose>=3:
+            print("Iteration: {}/{}\t{}\t{}\tTolerance: {}/{}".format(
+                        i, iterations, new_loss, best_params.loss_min,
+                        n_unchanged, n_iter_patience
+            ))
         if new_loss < best_params.loss_min:
             n_unchanged = 0
             best_params.screenshot(sess, model, substage_i, args = args,

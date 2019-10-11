@@ -5,12 +5,17 @@ import numpy as np
 def get_envelop(args):
     if args.envelop_form == 'tanh':
         return tf.tanh
-    elif args.envelop_form == 'polynomial' or args.envelop_form == 'hill':
+    elif args.envelop_form == 'polynomial':
         k = args.polynomial_k
-        if k%2 == 1: # odd Hill equation
+        assert k>1, "Hill coefficient has to be k>2."
+        if k%2 == 1: # odd order polynomial equation
             return lambda x: x**k/(1+tf.abs(x)**k)
-        else: # even Hill equation
+        else: # even order polynomial equation
             return lambda x: x**k/(1+x**k)*tf.sign(x)
+    elif args.envelop_form == 'hill':
+        k = args.polynomial_k
+        assert k>1, "Hill coefficient has to be k>2."
+        return lambda x: 2*(1-1/(1+tf.nn.relu(x+1)**k))-1
     else:
         raise Exception("Illegal envelop function. Choose from [tanh, polynomial/hill]")
 

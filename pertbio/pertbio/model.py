@@ -47,7 +47,7 @@ class CellBox:
         xs = self.ode_solver(self.x_0, t_mu, self.args.dT, self.args.n_T,
                             self.envelop, self._dXdt, self.args)
 
-        tail_iters = self.args.tail_iters
+        tail_iters = self.args.n_iter_tail
         n_last_iters = int(self.args.n_T - tail_iters)  # the last 20% iters were used for convergence test
         xs = tf.reshape(xs, [-1, self.n_x])[-n_last_iters:]
         mean, sd = tf.nn.moments(xs, axes = 0)

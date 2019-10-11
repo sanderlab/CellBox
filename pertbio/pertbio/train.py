@@ -67,7 +67,7 @@ def train_substage(model, dataset, sess, lr_val, l1lamda, iterations, n_iter_buf
         # Evaluation
         new_loss = best_params.avg_n_iters_loss(loss_valid_i)
         if args.export_verbose>=3:
-            print("Iteration: {}/{}\ttrain:{}\tvalid:{}\t{best:}\tTolerance: {}/{}".format(
+            print("Iteration: {}/{}\ttrain:{}\tvalid:{}\tbest:{}\tTolerance: {}/{}".format(
                         i, iterations, loss_train_i, new_loss, best_params.loss_min,
                         n_unchanged, n_iter_patience
             ))
@@ -169,7 +169,7 @@ class Screenshot(dict):
         self.loss_min = loss_min
         # Save the variables to disk.
         if self.export_verbose > 0:
-            W_screenshot, alpha_screenshot, eps_screenshot = sess.run(model.get_params())
+            W_screenshot, alpha_screenshot, eps_screenshot, psi_screenshot = sess.run(model.get_params())
             w_values = pd.DataFrame(W_screenshot, columns=node_index[0], index=node_index[0])
             alpha_values = pd.DataFrame(alpha_screenshot, index=node_index[0])
             eps_values = pd.DataFrame(eps_screenshot, index=node_index[0])

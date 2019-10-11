@@ -103,4 +103,4 @@ def get_variables(n_x, n_protein_nodes, n_activity_nodes):
         alpha = tf.nn.softplus(alpha)
         eps = tf.nn.softplus(eps)
         psi = tf.nn.softplus(psi)
-    return W, alpha, eps
+    return W, alpha, eps, psi

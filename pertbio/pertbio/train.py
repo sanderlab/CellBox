@@ -173,7 +173,11 @@ class Screenshot(dict):
             w_values = pd.DataFrame(W_screenshot, columns=node_index[0], index=node_index[0])
             alpha_values = pd.DataFrame(alpha_screenshot, index=node_index[0])
             eps_values = pd.DataFrame(eps_screenshot, index=node_index[0])
-            self.update({'W': w_values, 'alpha': alpha_values, 'eps_values': eps_values})
+            psi_values = pd.DataFrame(psi_screenshot, index=node_index[0])
+            if args.envelop == 2:
+                self.update({'W': w_values, 'alpha': alpha_values, 'eps_values': eps_values, 'psi_values': psi_values})
+            else:
+                self.update({'W': w_values, 'alpha': alpha_values, 'eps_values': eps_values})
 
         if self.export_verbose > 1:
             y_hat = sess.run(model.xhat, feed_dict = {model.mu: args.dataset['pert_test']})

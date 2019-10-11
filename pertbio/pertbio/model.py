@@ -20,13 +20,13 @@ class CellBox:
         self.args = args
         self.n_x = args.n_x
         self.x_0 = tf.constant(np.zeros((self.n_x, 1)), name="x_init", dtype=tf.float32)
-        self.W, self.alpha, self.eps = get_variables(
+        self.W, self.alpha, self.eps, self.psi = get_variables(
                     self.n_x, args.n_protein_nodes, args.n_activity_nodes)
         self.mu = tf.placeholder(tf.float32, [None, self.n_x])
         self.x_gold = tf.placeholder(tf.float32, [None, self.n_x])
         # Feed forward
         self.envelop = pertbio.kernel.get_envelop(args)
-        self.envelop.W, self.envelop.alpha, self.envelop.eps = self.get_params()
+        self.envelop.W, self.envelop.alpha, self.envelop.eps, self.envelop.psi = self.get_params()
 
         self.ode_solver = pertbio.kernel.get_ode_solver(args)
         self._dXdt = pertbio.kernel.get_dXdt(args, self.envelop)
@@ -39,7 +39,7 @@ class CellBox:
         self.op_optimize = optimize(self.loss, self.lr, optimizer=tf.train.AdamOptimizer)
 
     def get_params(self):
-        return self.W, self.alpha, self.eps
+        return self.W, self.alpha, self.eps, self.psi
 
 
     def _simu(self, t_mu):
@@ -81,6 +81,7 @@ def get_variables(n_x, n_protein_nodes, n_activity_nodes):
         W = tf.Variable(np.random.normal(0.01, size=(n_x, n_x)), name="W", dtype=tf.float32)
         eps = tf.Variable(np.ones((n_x, 1)), name="eps", dtype=tf.float32)
         alpha = tf.Variable(np.ones((n_x, 1)), name="alpha", dtype=tf.float32)
+        psi = tf.Variable(np.ones((n_x, 1)), name="psi", dtype=tf.float32)
 
         '''Enforce constraints  (i: recipient)
            no self regulation wii=0
@@ -101,4 +102,5 @@ def get_variables(n_x, n_protein_nodes, n_activity_nodes):
 
         alpha = tf.nn.softplus(alpha)
         eps = tf.nn.softplus(eps)
+        psi = tf.nn.softplus(psi)
     return W, alpha, eps

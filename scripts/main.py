@@ -29,7 +29,6 @@ def prepare_workdir(cfg):
 
     # Create Output Folder
     try:
-        md5 = pertbio.utils.md5(str(vars(cfg)))
         experiment_path = 'results/{}_{}'.format(cfg.experiment_id, md5)
         os.makedirs(experiment_path)
     except:
@@ -61,7 +60,8 @@ if __name__ == '__main__':
     ### Launching expr
     working_index = master_args.working_index
     cfg = pertbio.config.Config(master_args.experiment_config_path)
-    cfg.ckpt_path_full = os.path.join('./', cfg.ckpt_name)
+    cfg.ckpt_path_full = os.path.join('./', cfg.ckpt_name)   
+    md5 = pertbio.utils.md5(str(vars(cfg)))
     try:
         cfg.drug_index = master_args.drug_index
     except:

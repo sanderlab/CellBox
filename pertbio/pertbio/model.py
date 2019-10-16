@@ -13,6 +13,34 @@ def factory(args):
     else:
         raise Exception("Illegal model name. Choose from ['CellBox', 'CoExp', 'LinReg']")
 
+class LinReg:
+    def __init__(self, args):
+        super(LinReg, self).__init__()
+        self.args = args
+        self.n_x = args.n_x
+        self.mu = tf.placeholder(tf.float32, [None, self.n_x])
+        self.x_gold = tf.placeholder(tf.float32, [None, self.n_x])
+        self.params = {}
+        self.get_variables()
+        self.xhat = self.forward(self.mu)
+        # Loss and training ops
+        self.l1_lambda = tf.placeholder(tf.float32)
+        self.loss, self.loss_mse = loss(self.x_gold, self.xhat,
+                                        self.l1_lambda, self.params['W'])
+        self.lr = tf.placeholder(tf.float32)
+        self.op_optimize = optimize(self.loss, self.lr, optimizer=tf.train.AdamOptimizer)
+
+    def get_variables(self):
+        with tf.variable_scope("initialization", reuse=True):
+            self.params = {
+                'W': tf.Variable(np.random.normal(0.01, size=(self.n_x, self.n_x)), name="W", dtype=tf.float32),
+                'b': tf.Variable(np.random.normal(0.01, size=(self.n_x, 1)), name="b", dtype=tf.float32),
+                }
+
+    def forward(self, mu):
+        xhat = tf.matmul(mu, self.params['W']) + tf.reshape(self.params['b'], [1, -1])
+        return xhat
+
 class CellBox:
     def __init__(self, args):
         super(CellBox, self).__init__()

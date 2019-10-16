@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 import glob
-from pertbio.model import CellBox
+import pertbio
 from pertbio.utils import time_logger
 import time
 
@@ -96,7 +96,7 @@ def append_record(filename, contents):
 def train_model(args):
     args.logger = time_logger(time_logger_step = 1, hierachy = 2)
     ### Constructing model
-    cellbox = CellBox(args)
+    model = pertbio.model.factory(args)
     # DEBUGGING: See all variables in scope
     for i in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='initialization'):
         print(i)
@@ -105,7 +105,7 @@ def train_model(args):
     args.n_s1 = int(args.dataset['pert_train'].shape[0]*args.dropout_percent)
 
     ### Launching session
-    opt_op = cellbox.op_optimize
+    opt_op = model.op_optimize
     args.saver = tf.train.Saver()
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
@@ -129,7 +129,7 @@ def train_model(args):
             n_iter_patience = substage['n_iter_patience']
         except:
             n_iter_patience = args.n_iter_patience
-        train_substage(cellbox, args.dataset, sess, substage['lr_val'], substage['l1lamda'],
+        train_substage(model, args.dataset, sess, substage['lr_val'], substage['l1lamda'],
                     iterations = n_iter, n_iter_buffer = n_iter_buffer,
                     n_iter_patience = n_iter_patience, args = args)
 
@@ -151,8 +151,11 @@ class Screenshot(dict):
         self.saved_losses = [self.loss_min]
         self.n_iter_buffer = n_iter_buffer
         # initialize verbose
+        self.summary = {}
+        self.summary = {}
         try:
-            self.export_verbose = args.export_verbose # 0: no output, 1: params only, 2: params + prediction
+            self.export_verbose = args.export_verbose
+            # 0: no output, 1: params only, 2: params + prediction, 3: output for each iteration
         except:
             print("Undefined verbose. Using default: 2.")
             self.export_verbose = 2 # default verbose: 2
@@ -169,28 +172,27 @@ class Screenshot(dict):
         self.loss_min = loss_min
         # Save the variables to disk.
         if self.export_verbose > 0:
-            W_screenshot, alpha_screenshot, eps_screenshot, psi_screenshot = sess.run(model.get_params())
-            w_values = pd.DataFrame(W_screenshot, columns=node_index[0], index=node_index[0])
-            alpha_values = pd.DataFrame(alpha_screenshot, index=node_index[0])
-            eps_values = pd.DataFrame(eps_screenshot, index=node_index[0])
-            psi_values = pd.DataFrame(psi_screenshot, index=node_index[0])
-            if args.envelop == 2:
-                self.update({'W': w_values, 'alpha': alpha_values, 'eps_values': eps_values, 'psi_values': psi_values})
-            else:
-                self.update({'W': w_values, 'alpha': alpha_values, 'eps_values': eps_values})
+            params = sess.run(model.params)
+            for item in params:
+                params[item] = pd.DataFrame(params[item], index=node_index[0])
+            self.update(params)
 
         if self.export_verbose > 1:
             y_hat = sess.run(model.xhat, feed_dict = {model.mu: args.dataset['pert_test']})
             y_hat = pd.DataFrame(y_hat, columns=node_index[0])
             self.update({'y_hat': y_hat})
-            # convergence test - last model
-            summary_train = sess.run(model.convergence_metric, feed_dict = {model.mu: args.dataset['pert_train']})
-            summary_test = sess.run(model.convergence_metric, feed_dict = {model.mu: args.dataset['pert_test']})
-            summary_valid = sess.run(model.convergence_metric, feed_dict = {model.mu: args.dataset['pert_valid']})
-            summary_train = pd.DataFrame(summary_train, columns=np.vstack([node_index.values+'_mean', node_index.values+'_sd', node_index.values+'_dxdt']))
-            summary_test = pd.DataFrame(summary_test, columns=np.vstack([node_index.values+'_mean', node_index.values+'_sd', node_index.values+'_dxdt']))
-            summary_valid = pd.DataFrame(summary_valid, columns=np.vstack([node_index.values+'_mean', node_index.values+'_sd', node_index.values+'_dxdt']))
-            self.update({'summary_train': summary_train, 'summary_valid': summary_valid, 'summary_test': summary_test})
+
+        if self.export_verbose > 2:
+            try:
+                summary_train = sess.run(model.convergence_metric, feed_dict = {model.mu: args.dataset['pert_train']})
+                summary_test = sess.run(model.convergence_metric, feed_dict = {model.mu: args.dataset['pert_test']})
+                summary_valid = sess.run(model.convergence_metric, feed_dict = {model.mu: args.dataset['pert_valid']})
+                summary_train = pd.DataFrame(summary_train, columns=np.vstack([node_index.values+'_mean', node_index.values+'_sd', node_index.values+'_dxdt']))
+                summary_test = pd.DataFrame(summary_test, columns=np.vstack([node_index.values+'_mean', node_index.values+'_sd', node_index.values+'_dxdt']))
+                summary_valid = pd.DataFrame(summary_valid, columns=np.vstack([node_index.values+'_mean', node_index.values+'_sd', node_index.values+'_dxdt']))
+                self.update({'summary_train': summary_train, 'summary_test': summary_train, 'summary_valid':summary_valid})
+            except:
+                pass
 
     def save(self):
         for file in glob.glob(str(self.substage_i) + "_best.*.csv"):

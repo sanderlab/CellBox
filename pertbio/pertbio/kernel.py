@@ -19,26 +19,26 @@ def get_envelop(args):
     else:
         raise Exception("Illegal envelop function. Choose from [tanh, polynomial/hill]")
 
-def get_dXdt(args, envelop):
+def get_dXdt(args, envelop, params):
 
     if args.ode_degree == 1:
-        weighted_sum = lambda x: tf.matmul(envelop.W, x)
+        weighted_sum = lambda x: tf.matmul(params['W'], x)
     elif args.ode_degree == 2:
-        weighted_sum = lambda x: tf.matmul(envelop.W, x) * x
+        weighted_sum = lambda x: tf.matmul(params['W'], x) * x
     else:
         raise Exception("Illegal ODE degree. Choose from [1,2].")
 
     if args.envelop == 0:
         # epsilon*phi(Sigma+u)-alpha*x
-        return lambda x, t_mu, envelop: envelop.eps * envelop(weighted_sum(x) + t_mu) - envelop.alpha * x
+        return lambda x, t_mu, envelop: params['eps'] * envelop(weighted_sum(x) + t_mu) - params['alpha'] * x
     elif args.envelop == 1:
         # epsilon*[phi(Sigma)+u]-alpha*x
-        return lambda x, t_mu, envelop: envelop.eps * (envelop(weighted_sum(x)) + t_mu) - envelop.alpha * x
+        return lambda x, t_mu, envelop: params['eps'] * (envelop(weighted_sum(x)) + t_mu) - params['alpha'] * x
     elif args.envelop == 2:
         # epsilon*phi(Sigma)+psi*u-alpha*x
-        return lambda x, t_mu, envelop: envelop.eps * envelop(weighted_sum(x)) + envelop.psi*t_mu - envelop.alpha * x
+        return lambda x, t_mu, envelop: params['eps'] * envelop(weighted_sum(x)) + params['psi']*t_mu - params['alpha'] * x
     else:
-        raise Exception("Illegal envelop type. Choose from [1,2,3].")
+        raise Exception("Illegal envelop type. Choose from [0,1,2].")
 
 def get_ode_solver(args):
     if args.ode_solver == 'heun':

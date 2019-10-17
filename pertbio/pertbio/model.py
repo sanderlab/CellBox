@@ -10,6 +10,8 @@ def factory(args):
         return CoExp(args)
     elif args.model == 'LinReg':
         return LinReg(args)
+    elif args.model == 'NN':
+        return NN(args)
     else:
         raise Exception("Illegal model name. Choose from ['CellBox', 'CoExp', 'LinReg']")
 
@@ -89,6 +91,21 @@ class LinReg(PertBio):
 
     def forward(self, mu):
         xhat = tf.matmul(mu, self.params['W']) + tf.reshape(self.params['b'], [1, -1])
+        return xhat
+
+class NN(LinReg):
+    def get_variables(self):
+        with tf.variable_scope("initialization", reuse=True):
+            self.params.update({
+                'W_h': tf.Variable(np.random.normal(0.01, size=(self.n_x, self.args.n_hidden)), name="Wh", dtype=tf.float32),
+                'b_h' : tf.Variable(np.random.normal(0.01, size=(self.args.n_hidden, 1)), name="bh", dtype=tf.float32),
+                'W': tf.Variable(np.random.normal(0.01, size=(self.args.n_hidden, self.n_x)), name="Wo", dtype=tf.float32),
+                'b' : tf.Variable(np.random.normal(0.01, size=(self.n_x, 1)), name="bo", dtype=tf.float32)
+            })
+
+    def forward(self, mu):
+        hidden = tf.tanh(tf.matmul(mu, self.params['W_h']) + tf.reshape(self.params['b_h'], [1, -1]))
+        xhat = tf.matmul(hidden, self.params['W']) + tf.reshape(self.params['b'], [1, -1])
         return xhat
 
 class CellBox(PertBio):

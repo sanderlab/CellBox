@@ -174,7 +174,10 @@ class Screenshot(dict):
         if self.export_verbose > 0:
             params = sess.run(model.params)
             for item in params:
-                params[item] = pd.DataFrame(params[item], index=node_index[0])
+                try:
+                    params[item] = pd.DataFrame(params[item], index=node_index[0])
+                except:
+                    params[item] = pd.DataFrame(params[item])
             self.update(params)
 
         if self.export_verbose > 1 or self.export_verbose == -1: #no params but y_hat

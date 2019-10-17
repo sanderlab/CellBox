@@ -17,7 +17,7 @@ master_args = parser.parse_args()
 
 def set_seed(seed):
     seed = int(seed)
-    tf.set_random_seed(seed)
+    tf.compat.v1.set_random_seed(seed)
     np.random.seed(seed)
 
 def prepare_workdir(cfg):

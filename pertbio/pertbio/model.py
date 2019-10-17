@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 import pertbio.kernel
 from pertbio.utils import loss, optimize
+import tensorflow_probability as tfp
 
 def factory(args):
     if args.model == 'CellBox':
@@ -15,8 +16,9 @@ def factory(args):
     elif args.model == 'NN':
         return NN(args)
     else:
-        raise Exception("Illegal model name. Choose from \
-                        ['CellBox', 'CoExp', 'LinReg', 'NN', 'CoExp_nonlinear']")
+        raise Exception("Illegal model name. Choose from [{}]".format(
+                        'CellBox, CoExp, LinReg, NN, CoExp_nonlinear, Bayesian'
+                    ))
 
 class PertBio:
     def __init__(self, args):
@@ -32,16 +34,16 @@ class PertBio:
         """
         self.args = args
         self.n_x = args.n_x
-        self.mu = tf.placeholder(tf.float32, [None, self.n_x])
-        self.x_gold = tf.placeholder(tf.float32, [None, self.n_x])
+        self.mu = tf.compat.v1.placeholder(tf.float32, [None, self.n_x])
+        self.x_gold = tf.compat.v1.placeholder(tf.float32, [None, self.n_x])
         self.build()
 
     def get_ops(self):
-        self.l1_lambda = tf.placeholder(tf.float32)
+        self.l1_lambda = tf.compat.v1.placeholder(tf.float32)
         self.loss, self.loss_mse = loss(self.x_gold, self.xhat,
                                         self.l1_lambda, self.params['W'])
-        self.lr = tf.placeholder(tf.float32)
-        self.op_optimize = optimize(self.loss, self.lr, optimizer=tf.train.AdamOptimizer)
+        self.lr = tf.compat.v1.placeholder(tf.float32)
+        self.op_optimize = optimize(self.loss, self.lr)
 
     def build(self):
         self.params = {}
@@ -52,7 +54,7 @@ class PertBio:
 
 class CoExp(PertBio):
     def get_variables(self):
-        with tf.variable_scope("initialization", reuse=True):
+        with tf.compat.v1.variable_scope("initialization", reuse=True):
             Ws = tf.Variable(np.zeros([self.args.n_x, self.args.n_x
                             , 2, self.n_x]), dtype=tf.float32)
             bs = tf.Variable(np.zeros([self.args.n_x, self.args.n_x
@@ -60,7 +62,7 @@ class CoExp(PertBio):
         self.params.update({'Ws': Ws, 'bs': bs})
 
     def forward_ij(self, t_mu):
-        idx = tf.cast(tf.where(tf.not_equal(t_mu, 0))[:,0], tf.int32)
+        idx = tf.cast(tf.compat.v2.where(tf.not_equal(t_mu, 0))[:,0], tf.int32)
         idx = tf.stack([idx[-1],idx[0]])
                      # if idx = [i, j], use params[j][i]
                      # if idx = [i], use params[i][i]
@@ -76,18 +78,16 @@ class CoExp(PertBio):
         return xhat
 
     def get_ops(self):
-        self.l1_lambda = tf.placeholder(tf.float32)
+        self.l1_lambda = tf.compat.v1.placeholder(tf.float32)
         self.loss_mse = tf.reduce_mean(tf.square((self.x_gold - self.xhat)))
         self.loss = self.loss_mse
-        self.lr = tf.placeholder(tf.float32)
-        self.op_optimize = optimize(self.loss, self.lr,
-                                    optimizer=tf.train.AdamOptimizer,
-                                    var_list = None)
+        self.lr = tf.compat.v1.placeholder(tf.float32)
+        self.op_optimize = optimize(self.loss, self.lr, var_list = None)
 
 class CoExp_nonlinear(CoExp):
 
     def get_variables(self):
-        with tf.variable_scope("initialization", reuse=True):
+        with tf.compat.v1.variable_scope("initialization", reuse=True):
             Ws = tf.Variable(np.zeros([self.args.n_x, self.args.n_x
                             , 2, self.n_x]), dtype=tf.float32)
             bs = tf.Variable(np.zeros([self.args.n_x, self.args.n_x
@@ -104,7 +104,7 @@ class CoExp_nonlinear(CoExp):
 
 class LinReg(PertBio):
     def get_variables(self):
-        with tf.variable_scope("initialization", reuse=True):
+        with tf.compat.v1.variable_scope("initialization", reuse=True):
             self.params.update({
                 'W': tf.Variable(np.random.normal(0.01, size=(self.n_x, self.n_x)), name="W", dtype=tf.float32),
                 'b' : tf.Variable(np.random.normal(0.01, size=(self.n_x, 1)), name="b", dtype=tf.float32)
@@ -116,7 +116,7 @@ class LinReg(PertBio):
 
 class NN(LinReg):
     def get_variables(self):
-        with tf.variable_scope("initialization", reuse=True):
+        with tf.compat.v1.variable_scope("initialization", reuse=True):
             self.params.update({
                 'W_h': tf.Variable(np.random.normal(0.01, size=(self.n_x, self.args.n_hidden)), name="Wh", dtype=tf.float32),
                 'b_h' : tf.Variable(np.random.normal(0.01, size=(self.args.n_hidden, 1)), name="bh", dtype=tf.float32),
@@ -172,7 +172,7 @@ class CellBox(PertBio):
             eps (tf.Variable): eps, shape: [n_x, 1]
         '''
         n_x, n_protein_nodes, n_activity_nodes = self.n_x, self.args.n_protein_nodes, self.args.n_activity_nodes
-        with tf.variable_scope("initialization", reuse=True):
+        with tf.compat.v1.variable_scope("initialization", reuse=True):
             # TODO: check to see if it make sense to change tf.Variables to tf.get_variables
             '''Enforce constraints  (i: recipient)
                no self regulation wii=0

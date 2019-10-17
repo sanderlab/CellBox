@@ -98,7 +98,7 @@ def train_model(args):
     ### Constructing model
     model = pertbio.model.factory(args)
     # DEBUGGING: See all variables in scope
-    for i in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='initialization'):
+    for i in tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.GLOBAL_VARIABLES, scope='initialization'):
         print(i)
 
     ### Prepare for model training
@@ -106,9 +106,9 @@ def train_model(args):
 
     ### Launching session
     opt_op = model.op_optimize
-    args.saver = tf.train.Saver()
-    sess = tf.Session()
-    sess.run(tf.global_variables_initializer())
+    args.saver = tf.compat.v1.train.Saver()
+    sess = tf.compat.v1.Session()
+    sess.run(tf.compat.v1.global_variables_initializer())
     try:
         args.saver.restore(sess, './'+args.ckpt_name)
         print('Load existing model at {}...'.format(args.ckpt_name))
@@ -135,7 +135,7 @@ def train_model(args):
 
     ### Terminate session
     sess.close()
-    tf.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
 
 def save_model(saver, model, sess, path):
     # Save the variables to disk.

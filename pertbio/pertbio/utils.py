@@ -4,12 +4,12 @@ import time
 import hashlib
 
 def loss(x_gold, x_hat,l1, W):
-    with tf.variable_scope("loss", reuse=True):
+    with tf.compat.v1.variable_scope("loss", reuse=True):
         loss_mse = tf.reduce_mean(tf.square((x_gold - x_hat)))
         loss = loss_mse + l1 * tf.reduce_sum(tf.abs(W))
     return loss, loss_mse
 
-def optimize(loss, lr, optimizer=tf.train.AdamOptimizer, var_list = None):
+def optimize(loss, lr, optimizer=tf.compat.v1.train.AdamOptimizer, var_list = None):
     """
     Optimize the training loss using Adam
 
@@ -23,8 +23,8 @@ def optimize(loss, lr, optimizer=tf.train.AdamOptimizer, var_list = None):
         loss (loss): training loss, including regularization if applicable
     """
     if var_list is None:
-        var_list = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
-    with tf.variable_scope("optimization", reuse=tf.AUTO_REUSE):
+        var_list = tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.GLOBAL_VARIABLES)
+    with tf.compat.v1.variable_scope("optimization", reuse=tf.compat.v1.AUTO_REUSE):
         opt = optimizer(lr)
         opt_op = opt.minimize(loss, var_list = var_list)
     return opt_op, loss

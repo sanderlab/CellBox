@@ -15,7 +15,8 @@ def factory(args):
     elif args.model == 'NN':
         return NN(args)
     else:
-        raise Exception("Illegal model name. Choose from ['CellBox', 'CoExp', 'LinReg']")
+        raise Exception("Illegal model name. Choose from \
+                        ['CellBox', 'CoExp', 'LinReg', 'NN', 'CoExp_nonlinear']")
 
 class PertBio:
     def __init__(self, args):

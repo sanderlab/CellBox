@@ -13,37 +13,8 @@ def factory(args):
     else:
         raise Exception("Illegal model name. Choose from ['CellBox', 'CoExp', 'LinReg']")
 
-class LinReg:
+class PertBio:
     def __init__(self, args):
-        super(LinReg, self).__init__()
-        self.args = args
-        self.n_x = args.n_x
-        self.mu = tf.placeholder(tf.float32, [None, self.n_x])
-        self.x_gold = tf.placeholder(tf.float32, [None, self.n_x])
-        self.params = {}
-        self.get_variables()
-        self.xhat = self.forward(self.mu)
-        # Loss and training ops
-        self.l1_lambda = tf.placeholder(tf.float32)
-        self.loss, self.loss_mse = loss(self.x_gold, self.xhat,
-                                        self.l1_lambda, self.params['W'])
-        self.lr = tf.placeholder(tf.float32)
-        self.op_optimize = optimize(self.loss, self.lr, optimizer=tf.train.AdamOptimizer)
-
-    def get_variables(self):
-        with tf.variable_scope("initialization", reuse=True):
-            self.params = {
-                'W': tf.Variable(np.random.normal(0.01, size=(self.n_x, self.n_x)), name="W", dtype=tf.float32),
-                'b': tf.Variable(np.random.normal(0.01, size=(self.n_x, 1)), name="b", dtype=tf.float32),
-                }
-
-    def forward(self, mu):
-        xhat = tf.matmul(mu, self.params['W']) + tf.reshape(self.params['b'], [1, -1])
-        return xhat
-
-class CellBox:
-    def __init__(self, args):
-        super(CellBox, self).__init__()
         """
         CellBox construction
 
@@ -54,27 +25,48 @@ class CellBox:
             dXdt (float): time derivative of input x: dxdt(t)
 
         """
-        # Initialization
         self.args = args
         self.n_x = args.n_x
-        self.x_0 = tf.constant(np.zeros((self.n_x, 1)), name="x_init", dtype=tf.float32)
-        self.params = {}
-        self.get_variables(self.n_x, args.n_protein_nodes, args.n_activity_nodes)
         self.mu = tf.placeholder(tf.float32, [None, self.n_x])
         self.x_gold = tf.placeholder(tf.float32, [None, self.n_x])
-        # Feed forward
-        self.envelop = pertbio.kernel.get_envelop(args)
+        self.build()
 
-        self.ode_solver = pertbio.kernel.get_ode_solver(args)
-        self._dXdt = pertbio.kernel.get_dXdt(args, self.envelop, self.params)
-        self.convergence_metric , self.xhat = self.forward(self.mu)
-        # Loss and training ops
+    def get_ops(self):
         self.l1_lambda = tf.placeholder(tf.float32)
         self.loss, self.loss_mse = loss(self.x_gold, self.xhat,
                                         self.l1_lambda, self.params['W'])
         self.lr = tf.placeholder(tf.float32)
         self.op_optimize = optimize(self.loss, self.lr, optimizer=tf.train.AdamOptimizer)
 
+    def build(self):
+        self.params = {}
+        self.get_variables()
+        self.xhat = self.forward(self.mu)
+        self.get_ops()
+
+
+class LinReg(PertBio):
+    def get_variables(self):
+        with tf.variable_scope("initialization", reuse=True):
+            self.params.update({
+                'W': tf.Variable(np.random.normal(0.01, size=(self.n_x, self.n_x)), name="W", dtype=tf.float32),
+                'b' : tf.Variable(np.random.normal(0.01, size=(self.n_x, 1)), name="b", dtype=tf.float32)
+            })
+
+    def forward(self, mu):
+        xhat = tf.matmul(mu, self.params['W']) + tf.reshape(self.params['b'], [1, -1])
+        return xhat
+
+class CellBox(PertBio):
+    def build(self):
+        self.params = {}
+        self.get_variables()
+        self.x_0 = tf.constant(np.zeros((self.n_x, 1)), name="x_init", dtype=tf.float32)
+        self.envelop = pertbio.kernel.get_envelop(self.args)
+        self.ode_solver = pertbio.kernel.get_ode_solver(self.args)
+        self._dXdt = pertbio.kernel.get_dXdt(self.args, self.envelop, self.params)
+        self.convergence_metric , self.xhat = self.forward(self.mu)
+        self.get_loss()
 
     def _simu(self, t_mu):
         t_mu = tf.reshape(t_mu, [self.n_x, 1])
@@ -82,8 +74,7 @@ class CellBox:
                             self.envelop, self._dXdt, self.args)
 
         tail_iters = self.args.n_iter_tail
-        n_last_iters = int(self.args.n_T - tail_iters)  # the last 20% iters were used for convergence test
-        xs = tf.reshape(xs, [-1, self.n_x])[-n_last_iters:]
+        xs = tf.reshape(xs, [-1, self.n_x])[-tail_iters:]
         mean, sd = tf.nn.moments(xs, axes = 0)
         dxdt = tf.reshape(
                         self._dXdt(tf.reshape(xs[-1], [-1,1]), t_mu, self.envelop)
@@ -95,8 +86,7 @@ class CellBox:
                                        elems = (mu, mu), dtype=(tf.float32, tf.float32))
         return convergence_metric, xhat
 
-
-    def get_variables(self, n_x, n_protein_nodes, n_activity_nodes):
+    def get_variables(self):
         '''
         Initialize parameters in the Hopfield equation
         Args:
@@ -109,7 +99,7 @@ class CellBox:
             alpha (tf.Variable): alpha, shape: [n_x, 1]
             eps (tf.Variable): eps, shape: [n_x, 1]
         '''
-
+        n_x, n_protein_nodes, n_activity_nodes = self.n_x, self.args.n_protein_nodes, self.args.n_activity_nodes
         with tf.variable_scope("initialization", reuse=True):
             # TODO: check to see if it make sense to change tf.Variables to tf.get_variables
             '''Enforce constraints  (i: recipient)

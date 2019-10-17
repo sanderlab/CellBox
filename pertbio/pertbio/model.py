@@ -8,6 +8,8 @@ def factory(args):
         return CellBox(args)
     elif args.model == 'CoExp':
         return CoExp(args)
+    elif args.model == 'CoExp_nonlinear':
+        return CoExp_nonlinear(args)
     elif args.model == 'LinReg':
         return LinReg(args)
     elif args.model == 'NN':
@@ -80,6 +82,24 @@ class CoExp(PertBio):
         self.op_optimize = optimize(self.loss, self.lr,
                                     optimizer=tf.train.AdamOptimizer,
                                     var_list = None)
+
+class CoExp_nonlinear(CoExp):
+
+    def get_variables(self):
+        with tf.variable_scope("initialization", reuse=True):
+            Ws = tf.Variable(np.zeros([self.args.n_x, self.args.n_x
+                            , 2, self.n_x]), dtype=tf.float32)
+            bs = tf.Variable(np.zeros([self.args.n_x, self.args.n_x
+                            , self.n_x, 1]), dtype=tf.float32)
+            W = tf.Variable(np.zeros([self.n_x, 1]), dtype=tf.float32)
+            b = tf.Variable(np.zeros([self.n_x, 1]), dtype=tf.float32)
+        self.params.update({'Ws': Ws, 'bs': bs, 'W': W, 'b': b})
+
+    def forward(self, mu):
+        hidden = tf.tanh(tf.map_fn(fn = (lambda t_mu: self.forward_ij(t_mu)),
+                           elems = mu, dtype=tf.float32))
+        xhat = tf.matmul(hidden, self.params['W']) + tf.reshape(self.params['b'], [1, -1])
+        return xhat
 
 class LinReg(PertBio):
     def get_variables(self):

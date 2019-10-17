@@ -177,7 +177,7 @@ class Screenshot(dict):
                 params[item] = pd.DataFrame(params[item], index=node_index[0])
             self.update(params)
 
-        if self.export_verbose > 1:
+        if self.export_verbose > 1 or self.export_verbose == -1: #no params but y_hat
             y_hat = sess.run(model.xhat, feed_dict = {model.mu: args.dataset['pert_test']})
             y_hat = pd.DataFrame(y_hat, columns=node_index[0])
             self.update({'y_hat': y_hat})

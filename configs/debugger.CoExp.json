@@ -1,0 +1,32 @@
+{
+  "experiment_id": "CoExp",
+  "experiment_type": "random partition",
+  "model": "CoExp",
+  "pert_file": "data/pert_target.csv",
+  "expr_file": "data/expr.csv",
+  "node_index_file": "data/node_Index.csv",
+  "pert_v_file": "data/prediction_in.csv",
+  "prediction_output_file": "data/Predicted_Valid.csv",
+  "n_x" : 99,
+  "n_protein_nodes": 82,
+  "trainset_ratio": 0.7,
+  "validset_ratio": 0.8,
+  "dropout_percent": 0.8,
+  "batchsize": 40,
+
+  "n_iter": 1000,
+  "n_iter_buffer":10,
+  "n_iter_patience":20,
+  "n_iter_tail": 5,
+
+  "stages":[{
+    "nT" : 100,
+    "sub_stages":[
+        {"lr_val": 0.1,"l1lamda": 0.001, "n_iter_patience":5},
+        {"lr_val": 0.01,"l1lamda": 0.001, "n_iter_patience":5}
+    ]}],
+
+    "export_verbose": -1,
+    "model_prefix": "b11",
+    "ckpt_name": "model11.ckpt"
+}

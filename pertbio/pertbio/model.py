@@ -45,6 +45,40 @@ class PertBio:
         self.get_ops()
 
 
+class CoExp(PertBio):
+    def get_variables(self):
+        with tf.variable_scope("initialization", reuse=True):
+            Ws = tf.Variable(np.zeros([self.args.n_x, self.args.n_x
+                            , 2, self.n_x]), dtype=tf.float32)
+            bs = tf.Variable(np.zeros([self.args.n_x, self.args.n_x
+                            , self.n_x, 1]), dtype=tf.float32)
+        self.params.update({'Ws': Ws, 'bs': bs})
+
+    def forward_ij(self, t_mu):
+        idx = tf.cast(tf.where(tf.not_equal(t_mu, 0))[:,0], tf.int32)
+        idx = tf.stack([idx[-1],idx[0]])
+                     # if idx = [i, j], use params[j][i]
+                     # if idx = [i], use params[i][i]
+        x_ij = tf.stack([t_mu[idx[0]], t_mu[idx[1]]])
+        w_ij = tf.slice(self.params['Ws'], [idx[0],idx[1],0,0], [1,1,2,self.args.n_x])[0,0]
+        b_ij = tf.slice(self.params['bs'], [idx[0],idx[1],0,0], [1,1,self.args.n_x,1])[0,0]
+        xhat_ij = tf.matmul(tf.reshape(x_ij, [-1,2]), w_ij) + tf.reshape(b_ij, [1, -1])
+        return xhat_ij[0]
+
+    def forward(self, mu):
+        xhat = tf.map_fn(fn = (lambda t_mu: self.forward_ij(t_mu)),
+                           elems = mu, dtype=tf.float32)
+        return xhat
+
+    def get_ops(self):
+        self.l1_lambda = tf.placeholder(tf.float32)
+        self.loss_mse = tf.reduce_mean(tf.square((self.x_gold - self.xhat)))
+        self.loss = self.loss_mse
+        self.lr = tf.placeholder(tf.float32)
+        self.op_optimize = optimize(self.loss, self.lr,
+                                    optimizer=tf.train.AdamOptimizer,
+                                    var_list = None)
+
 class LinReg(PertBio):
     def get_variables(self):
         with tf.variable_scope("initialization", reuse=True):

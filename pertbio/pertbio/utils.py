@@ -9,7 +9,7 @@ def loss(x_gold, x_hat,l1, W):
         loss = loss_mse + l1 * tf.reduce_sum(tf.abs(W))
     return loss, loss_mse
 
-def optimize(loss, lr, optimizer=tf.train.AdamOptimizer):
+def optimize(loss, lr, optimizer=tf.train.AdamOptimizer, var_list = None):
     """
     Optimize the training loss using Adam
 
@@ -17,13 +17,16 @@ def optimize(loss, lr, optimizer=tf.train.AdamOptimizer):
         loss (float): training loss, mean squared error + L1 regularization term
         lr (float): placeholder for learning rate
         optimizer: default tf.train.AdamOptimizer
+        var_list: list of vars to be optimized
     Returns:
         opt_op (optimizer): op to optimize the training loss
         loss (loss): training loss, including regularization if applicable
     """
+    if var_list is None:
+        var_list = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
     with tf.variable_scope("optimization", reuse=tf.AUTO_REUSE):
         opt = optimizer(lr)
-        opt_op = opt.minimize(loss)
+        opt_op = opt.minimize(loss, var_list = var_list)
     return opt_op, loss
 
 class time_logger():

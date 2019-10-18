@@ -138,7 +138,7 @@ class CellBox(PertBio):
         self.ode_solver = pertbio.kernel.get_ode_solver(self.args)
         self._dXdt = pertbio.kernel.get_dXdt(self.args, self.envelop, self.params)
         self.convergence_metric , self.xhat = self.forward(self.mu)
-        self.get_loss()
+        self.get_ops()
 
     def _simu(self, t_mu):
         t_mu = tf.reshape(t_mu, [self.n_x, 1])

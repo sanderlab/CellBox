@@ -24,7 +24,7 @@ def get_dXdt(args, envelop, params):
     if args.ode_degree == 1:
         weighted_sum = lambda x: tf.matmul(params['W'], x)
     elif args.ode_degree == 2:
-        weighted_sum = lambda x: tf.matmul(params['W'], x) + tf.reduce_sum(params['W'], axis=1) * x
+        weighted_sum = lambda x: tf.matmul(params['W'], x) + tf.reshape(tf.reduce_sum(params['W'], axis=1), [args.n_x, 1]) * x
     else:
         raise Exception("Illegal ODE degree. Choose from [1,2].")
 

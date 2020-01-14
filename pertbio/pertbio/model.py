@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 import pertbio.kernel
 from pertbio.utils import loss, optimize
-import tensorflow_probability as tfp
+# import tensorflow_probability as tfp
 
 def factory(args):
     if args.model == 'CellBox':

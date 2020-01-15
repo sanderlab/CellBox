@@ -17,7 +17,7 @@ setuptools.setup(
     url="https://github.com/dfci/CellBox",
     packages=['pertbio'],
     python_requires='>=3.6',
-    install_requires=['tensorflow==1.15.0', 'numpy==1.16.0', 'pandas=0.24.2'],
+    install_requires=['tensorflow==1.15.0', 'numpy==1.16.0', 'pandas==0.24.2'],
     tests_require=['pytest', 'pandas'],
     setup_requires=['pytest-runner', "pytest"],
     zip_safe=True,

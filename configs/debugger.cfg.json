@@ -37,11 +37,11 @@
     ]},{
     "nT": 200,
     "sub_stages":[
-        {"lr_val": 0.001,"l1lamda": 0.0001},
+        {"lr_val": 0.001,"l1lamda": 0.0001}
     ]},{
     "nT": 400,
     "sub_stages":[
-        {"lr_val": 0.001,"l1lamda": 0.0001},
+        {"lr_val": 0.001,"l1lamda": 0.0001}
     ]}],
 
     "export_verbose": 3,

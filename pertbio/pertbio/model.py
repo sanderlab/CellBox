@@ -6,15 +6,17 @@ from pertbio.utils import loss, optimize
 
 def factory(args):
     if args.model == 'CellBox':
-        return CellBox(args)
+        return CellBox(args).build()
     elif args.model == 'CoExp':
-        return CoExp(args)
+        return CoExp(args).build()
     elif args.model == 'CoExp_nonlinear':
-        return CoExp_nonlinear(args)
+        return CoExp_nonlinear(args).build()
     elif args.model == 'LinReg':
-        return LinReg(args)
+        return LinReg(args).build()
     elif args.model == 'NN':
-        return NN(args)
+        return NN(args).build()
+    elif args.model == 'Bayesian':
+        return BN(args).build()
     else:
         raise Exception("Illegal model name. Choose from [{}]".format(
                         'CellBox, CoExp, LinReg, NN, CoExp_nonlinear, Bayesian'
@@ -22,21 +24,11 @@ def factory(args):
 
 class PertBio:
     def __init__(self, args):
-        """
-        CellBox construction
-
-        Args:
-            args: Config() instance
-
-        Returns:
-            dXdt (float): time derivative of input x: dxdt(t)
-
-        """
         self.args = args
         self.n_x = args.n_x
         self.mu = tf.compat.v1.placeholder(tf.float32, [None, self.n_x])
         self.x_gold = tf.compat.v1.placeholder(tf.float32, [None, self.n_x])
-        self.build()
+        self.idx = tf.compat.v1.placeholder(tf.int32, [None])
 
     def get_ops(self):
         self.l1_lambda = tf.compat.v1.placeholder(tf.float32)
@@ -50,46 +42,77 @@ class PertBio:
         self.get_variables()
         self.xhat = self.forward(self.mu)
         self.get_ops()
+        return self
 
 
 class CoExp(PertBio):
+    def __init__(self, args):
+        super(CoExp, self).__init__(args)
+        self.mu_full = tf.constant(self.args.dataset['pert_full'], dtype=tf.float32)
+        self.idx_full = tf.map_fn(fn=self.get_idx_pair, elems=self.mu_full, dtype=tf.int32)
+
+    @tf.function
+    def get_idx_pair(self, mu_tensor):
+        idx = tf.compat.v2.where(tf.not_equal(mu_tensor, 0))[:,0]
+        idx = tf.stack([idx[0], idx[-1]])
+             # if idx = [i, j], use params[j][i]
+             # if idx = [i], use params[i][i]
+        return tf.compat.v2.cast(idx, dtype=tf.int32)
+
     def get_variables(self):
         with tf.compat.v1.variable_scope("initialization", reuse=True):
             Ws = tf.Variable(np.zeros([self.args.n_x, self.args.n_x
-                            , 2, self.n_x]), dtype=tf.float32)
+                            , self.n_x, self.n_x]), dtype=tf.float32)
             bs = tf.Variable(np.zeros([self.args.n_x, self.args.n_x
                             , self.n_x, 1]), dtype=tf.float32)
         self.params.update({'Ws': Ws, 'bs': bs})
 
-    def forward_ij(self, t_mu):
-        idx = tf.cast(tf.compat.v2.where(tf.not_equal(t_mu, 0))[:,0], tf.int32)
-        idx = tf.stack([idx[-1],idx[0]])
-                     # if idx = [i, j], use params[j][i]
-                     # if idx = [i], use params[i][i]
-        x_ij = tf.stack([t_mu[idx[0]], t_mu[idx[1]]])
-        w_ij = tf.slice(self.params['Ws'], [idx[0],idx[1],0,0], [1,1,2,self.args.n_x])[0,0]
-        b_ij = tf.slice(self.params['bs'], [idx[0],idx[1],0,0], [1,1,self.args.n_x,1])[0,0]
-        xhat_ij = tf.matmul(tf.reshape(x_ij, [-1,2]), w_ij) + tf.reshape(b_ij, [1, -1])
-        return xhat_ij[0]
+    def forward(self, training):
+        # during training, use mu_full, while during testing use mu
+        idx = tf.map_fn(fn=self.get_idx_pair, elems=self.mu, dtype=tf.int32) # if not training else self.idx_full
 
-    def forward(self, mu):
-        xhat = tf.map_fn(fn = (lambda t_mu: self.forward_ij(t_mu)),
-                           elems = mu, dtype=tf.float32)
-        return xhat
+        Ws = tf.gather_nd(self.params['Ws'], self.idx_full) # full_mu_size x [Params,]
+        bs = tf.gather_nd(self.params['bs'], self.idx_full)
+        xhats = tf.tensordot(Ws, tf.transpose(self.mu), axes=1) + bs # mu_idx_size x [xhat] x batch_size
+        xhats_transposed = tf.transpose(xhats, perm=[2,0,1] )# batch_size x mu_idx_size  x [xhat]
+
+        # mask the models for prediction
+        import pdb; pdb.set_trace()
+        idx_full_tile = tf.tile(tf.expand_dims(self.mu_full, axis=0), [tf.shape(self.mu)[0], 1, 1])
+        idx_tile = tf.tile(tf.expand_dims(idx, axis=1), [1, self.idx_full.shape[0], 1])
+        idx_equal = tf.equal(idx_full_tile, idx_tile)
+        mask = tf.compat.v2.where(tf.math.logical_and(idx_equal[:,:,0], idx_equal[:,:,1]))
+        xhats_masked = tf.gather_nd(xhats_transposed, mask)
+
+        # x[5]: mask is wrong
+        self.tmp_list = [xhats, xhats_transposed, idx_full_tile, idx_tile, idx_equal,  mask, xhats_masked]
+        tmp = sess.run(model.tmp_list, feed_dict=valid_set)
+        mask = tf.compat.v2.where(tf.math.logical_and(idx_equal[:,:,0], idx_equal[:,:,1]))
+
+        return xhats_masked
 
     def get_ops(self):
         self.l1_lambda = tf.compat.v1.placeholder(tf.float32)
         self.loss_mse = tf.reduce_mean(tf.square((self.x_gold - self.xhat)))
-        self.loss = self.loss_mse
+        self.loss = tf.reduce_mean(tf.square((self.x_gold - self.xhat_training)))
         self.lr = tf.compat.v1.placeholder(tf.float32)
         self.op_optimize = optimize(self.loss, self.lr, var_list = None)
+
+    def build(self):
+        self.params = {}
+        self.get_variables()
+        self.xhat_training = self.forward(training=True)
+        self.xhat = self.forward(training=False)
+        self.get_ops()
+        return self
+
 
 class CoExp_nonlinear(CoExp):
 
     def get_variables(self):
         with tf.compat.v1.variable_scope("initialization", reuse=True):
             Ws = tf.Variable(np.zeros([self.args.n_x, self.args.n_x
-                            , 2, self.n_x]), dtype=tf.float32)
+                            , self.n_x, self.n_x]), dtype=tf.float32)
             bs = tf.Variable(np.zeros([self.args.n_x, self.args.n_x
                             , self.n_x, 1]), dtype=tf.float32)
             W = tf.Variable(np.zeros([self.n_x, 1]), dtype=tf.float32)
@@ -97,9 +120,15 @@ class CoExp_nonlinear(CoExp):
         self.params.update({'Ws': Ws, 'bs': bs, 'W': W, 'b': b})
 
     def forward(self, mu):
-        hidden = tf.tanh(tf.map_fn(fn = (lambda t_mu: self.forward_ij(t_mu)),
-                           elems = mu, dtype=tf.float32))
-        xhat = tf.matmul(hidden, self.params['W']) + tf.reshape(self.params['b'], [1, -1])
+        # during training, use mu_full, while during testing use mu
+        idx = tf.map_fn(fn=self.get_idx_pair, elems=mu, dtype=tf.int32)
+        # mask the models for prediction
+        Ws = tf.gather_nd(self.params['Ws'], idx) # batch_size x [Params,]
+        bs = tf.gather_nd(self.params['bs'], idx)
+        hidden = tf.tensordot(Ws, tf.transpose(x_gold), axes=1) + bs # batch_size x [Params,] x batch_size
+        hidden_transposed = tf.transpose(hidden, perm=[0,2,1])
+        hidden_masked = tf.gather_nd(hidden_transposed, tf.compat.v2.where(tf.eye(tf.shape(mu)[0])))
+        xhat = tf.matmul(tf.tanh(hidden_masked), self.params['W']) + tf.reshape(self.params['b'], [1, -1])
         return xhat
 
 class LinReg(PertBio):

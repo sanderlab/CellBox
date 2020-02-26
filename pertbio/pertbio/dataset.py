@@ -37,6 +37,7 @@ def s2c(cfg):
         "pert_train": pert_train.iloc[valid_pos[:ntrain],:],
         "pert_valid": pert_train.iloc[valid_pos[ntrain:],:],
         "pert_test": cfg.pert[testidx],
+        "pert_full": cfg.pert,
         "train_data": train_data.iloc[valid_pos[:ntrain],:],
         "valid_data": train_data.iloc[valid_pos[ntrain:],:],
         "test_data": cfg.expr[testidx]
@@ -70,6 +71,7 @@ def loo(cfg, singles):
         "pert_train": pert_train.iloc[valid_pos[:ntrain],:],
         "pert_valid": pert_train.iloc[valid_pos[ntrain:],:],
         "pert_test": cfg.pert[testidx],
+        "pert_full": cfg.pert,
         "train_data": train_data.iloc[valid_pos[:ntrain],:],
         "valid_data": train_data.iloc[valid_pos[ntrain:],:],
         "test_data": cfg.expr[testidx]
@@ -93,6 +95,7 @@ def random_partition(cfg):
         "pert_train": cfg.pert.iloc[random_pos[:ntrain], :],
         "pert_valid": cfg.pert.iloc[random_pos[ntrain:nvalid], :],
         "pert_test": cfg.pert.iloc[random_pos[nvalid:], :],
+        "pert_full": cfg.pert,
         "train_data": cfg.expr.iloc[random_pos[:ntrain], :],
         "valid_data": cfg.expr.iloc[random_pos[ntrain:nvalid], :],
         "test_data": cfg.expr.iloc[random_pos[nvalid:], :]

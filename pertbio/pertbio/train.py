@@ -45,16 +45,20 @@ def train_substage(model, dataset, sess, lr_val, l1lamda, iterations, n_iter_buf
             model.x_gold: dataset['train_data'].iloc[batch_index,:],
             model.mu: dataset['pert_train'].iloc[batch_index,:],
             model.lr: lr_val,
-            model.l1_lambda: l1lamda
+            model.l1_lambda: l1lamda,
+            model.idx: batch_index
         }
         valid_set = {
             model.x_gold: dataset['valid_data'],
             model.mu: dataset['pert_valid'],
-            model.l1_lambda: l1lamda
+            model.l1_lambda: l1lamda,
+            model.idx: batch_index
         }
         test_set = {
             model.x_gold: dataset['test_data'],
-            model.mu: dataset['pert_test']
+            model.mu: dataset['pert_test'],
+            model.l1_lambda: l1lamda,
+            model.idx: batch_index
         }
 
         # Training:
@@ -136,28 +140,28 @@ def train_model(args):
     ### Terminate session
     sess.close()
     tf.compat.v1.reset_default_graph()
-    
+
 def simu_model(config_path, working_index, mu):
     cfg = pertbio.config.Config(config_path)
     cfg.ckpt_path_full = os.path.join('./', cfg.ckpt_name)
     md5 = pertbio.utils.md5(str(vars(cfg)))
-       
+
     experiment_path = 'results/{}_{}'.format(cfg.experiment_id, md5)
     working_index = cfg.model_prefix + "_" + str(working_index).zfill(3)
-    
-    tf.reset_default_graph()  
+
+    tf.reset_default_graph()
     args = cfg
-    
+
     args.sub_stages = args.stages[-1]['sub_stages']
     args.n_T = args.stages[-1]['nT']
     model = pertbio.model.factory(args)
     saver = tf.compat.v1.train.Saver()
     sess = tf.compat.v1.Session()
-    
+
     file = experiment_path+'/'+working_index+'/'+cfg.ckpt_name
     try:
     	saver.restore(sess, file)
-    	
+
     	mu = np.float32(mu)
     	if args.model == 'CellBox':
     		convergence, xhat = sess.run(model.forward(mu))
@@ -166,9 +170,9 @@ def simu_model(config_path, working_index, mu):
     except:
         print('Model does not exist!')
         xhat = None
-    
+
     return xhat
-        
+
 def save_model(saver, model, sess, path):
     # Save the variables to disk.
     tmp = saver.save(sess, path)

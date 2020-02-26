@@ -2,7 +2,7 @@
   "experiment_id": "CoExp",
   "experiment_type": "random partition",
   "model": "CoExp",
-  "pert_file": "data/pert_target.csv",
+  "pert_file": "data/pert.csv",
   "expr_file": "data/expr.csv",
   "node_index_file": "data/node_Index.csv",
   "pert_v_file": "data/prediction_in.csv",
@@ -22,8 +22,8 @@
   "stages":[{
     "nT" : 100,
     "sub_stages":[
-        {"lr_val": 0.1,"l1lamda": 0.001, "n_iter_patience":5},
-        {"lr_val": 0.01,"l1lamda": 0.001, "n_iter_patience":5}
+        {"lr_val": 0.1,"l1lamda": 0.1},
+        {"lr_val": 0.01,"l1lamda": 0.1}
     ]}],
 
     "export_verbose": -1,

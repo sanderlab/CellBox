@@ -63,7 +63,7 @@ def heun_solver(x, t_mu, dT, n_T, envelop, _dXdt, args):
     return xs
 
 def euler_solver(x, t_mu, dT, n_T, envelop, _dXdt, args):
-    xs = [x]
+    xs = [ tf.tile(x, [1, tf.shape(t_mu)[1]]) ]
     for i in range(n_T):
         dXdt_current = _dXdt(x, t_mu, envelop)
         x = x + dT * dXdt_current
@@ -72,7 +72,7 @@ def euler_solver(x, t_mu, dT, n_T, envelop, _dXdt, args):
     return xs
 
 def midpoint_solver(x, t_mu, dT, n_T, envelop, _dXdt, args):
-    xs = [x]
+    xs = [ tf.tile(x, [1, tf.shape(t_mu)[1]]) ]
     for i in range(n_T):
         dXdt_current = _dXdt(x, t_mu, envelop)
         dXdt_midpoint = _dXdt(x + 0.5 * dT * dXdt_current, t_mu, envelop)
@@ -82,7 +82,7 @@ def midpoint_solver(x, t_mu, dT, n_T, envelop, _dXdt, args):
     return xs
 
 def rk4_solver(x, t_mu, dT, n_T, envelop, _dXdt, args):
-    xs = [x]
+    xs = [ tf.tile(x, [1, tf.shape(t_mu)[1]]) ]
     for i in range(n_T):
         k1 = _dXdt(x, t_mu, envelop)
         k2 = _dXdt(x + 0.5*dT*k1, t_mu, envelop)

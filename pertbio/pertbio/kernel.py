@@ -53,38 +53,42 @@ def get_ode_solver(args):
         raise Exception("Illegal ODE solver. Use [heun, euler, rk4, midpoint]")
 
 def heun_solver(x, t_mu, dT, n_T, envelop, _dXdt, args):
-    xs = x
+    xs = [ tf.tile(x, [1, tf.shape(t_mu)[1]]) ]
     for i in range(n_T):
         dXdt_current = _dXdt(x, t_mu, envelop)
         dXdt_next = _dXdt(x + dT * dXdt_current, t_mu, envelop)
         x = x + dT * 0.5 * (dXdt_current + dXdt_next)
-        xs = tf.concat([xs, x], axis = 0)
+        xs.append(x)
+    xs = tf.stack(xs, axis = 0)
     return xs
 
 def euler_solver(x, t_mu, dT, n_T, envelop, _dXdt, args):
-    xs = x
+    xs = [x]
     for i in range(n_T):
         dXdt_current = _dXdt(x, t_mu, envelop)
         x = x + dT * dXdt_current
-        xs = tf.concat([xs, x], axis = 0)
+        xs.append(x)
+    xs = tf.stack(xs, axis = 0)
     return xs
 
 def midpoint_solver(x, t_mu, dT, n_T, envelop, _dXdt, args):
-    xs = x
+    xs = [x]
     for i in range(n_T):
         dXdt_current = _dXdt(x, t_mu, envelop)
         dXdt_midpoint = _dXdt(x + 0.5 * dT * dXdt_current, t_mu, envelop)
         x = x + dT * dXdt_midpoint
-        xs = tf.concat([xs, x], axis = 0)
+        xs.append(x)
+    xs = tf.stack(xs, axis = 0)
     return xs
 
 def rk4_solver(x, t_mu, dT, n_T, envelop, _dXdt, args):
-    xs = x
+    xs = [x]
     for i in range(n_T):
         k1 = _dXdt(x, t_mu, envelop)
         k2 = _dXdt(x + 0.5*dT*k1, t_mu, envelop)
         k3 = _dXdt(x + 0.5*dT*k2, t_mu, envelop)
         k4 = _dXdt(x + dT*k3, t_mu, envelop)
         x = x + dT * (1/6*k1+1/3*k2+1/3*k3+1/6*k4)
-        xs = tf.concat([xs, x], axis = 0)
+        xs.append(x)
+    xs = tf.stack(xs, axis = 0)
     return xs

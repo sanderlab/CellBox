@@ -168,6 +168,7 @@ class CellBox(PertBio):
         self._dXdt = pertbio.kernel.get_dXdt(self.args, self.envelop, self.params)
         self.convergence_metric , self.xhat = self.forward(self.mu)
         self.get_ops()
+        return self
 
     def _simu(self, t_mu):
         t_mu = tf.reshape(t_mu, [self.n_x, 1])
@@ -183,8 +184,16 @@ class CellBox(PertBio):
         return tf.reshape(xs[-1], [self.n_x]), tf.concat([mean, sd, dxdt], axis = 0)
 
     def forward(self, mu):
-        xhat, convergence_metric = tf.map_fn(fn = (lambda mu_i: self._simu(mu_i[0])),
-                                       elems = (mu, mu), dtype=(tf.float32, tf.float32))
+        mu_t = tf.transpose(mu)
+        xs = self.ode_solver(self.x_0, mu_t, self.args.dT, self.args.n_T, self.envelop, self._dXdt, self.args)
+        # [n_T, n_x, batch_size]
+        xs = xs[-self.args.n_iter_tail:]
+        # [n_iter_tail, n_x, batch_size]
+        mean, sd = tf.nn.moments(xs, axes = 0)
+        xhat = tf.transpose(xs[-1])
+        dxdt = self._dXdt(xs[-1], mu_t, self.envelop)
+        # [n_x, batch_size] for last ODE step
+        convergence_metric = tf.concat([mean, sd, dxdt], axis = 0)
         return convergence_metric, xhat
 
     def get_variables(self):

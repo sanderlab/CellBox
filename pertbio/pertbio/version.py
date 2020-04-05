@@ -53,7 +53,12 @@ def get_msg():
         * Add new ODE solvers
         * Add new envelop forms
         
-        version 0.1.2
+        version 0.2.0
+        -- Feb 26, 2020 --
+        * Add support of matrix operation rather than function mapping
+        * Roughly 5x faster
+        
+        version 0.2.1
         -- Apr 5, 2020 --
         * Reformat for better code style
         * Revise docs

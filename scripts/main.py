@@ -1,8 +1,5 @@
-import datetime
 import pertbio
-import sys
 import os
-import sys
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -15,36 +12,40 @@ parser.add_argument('-i', '--working_index', default=0)
 parser.add_argument('-drug', '--drug_index', required=False)
 master_args = parser.parse_args()
 
-def set_seed(seed):
-    seed = int(seed)
-    tf.compat.v1.set_random_seed(seed)
-    np.random.seed(seed)
 
-def prepare_workdir(cfg):
+def set_seed(in_seed):
+    int_seed = int(in_seed)
+    tf.compat.v1.set_random_seed(int_seed)
+    np.random.seed(int_seed)
+
+
+def prepare_workdir(in_cfg):
     # Read Data
-    cfg.pert = pd.read_csv(cfg.pert_file, header=None)
-    cfg.expr = pd.read_csv(cfg.expr_file, header=None)
-    cfg.node_index = pd.read_csv(cfg.node_index_file, header=None, names=None)
-    cfg.loo = pd.read_csv("data/loo_label.csv", header=None)
+    in_cfg.pert = pd.read_csv(in_cfg.pert_file, header=None)
+    in_cfg.expr = pd.read_csv(in_cfg.expr_file, header=None)
+    in_cfg.node_index = pd.read_csv(in_cfg.node_index_file, header=None, names=None)
+    in_cfg.loo = pd.read_csv("data/loo_label.csv", header=None)
 
     # Create Output Folder
+    experiment_path = 'results/{}_{}'.format(cfg.experiment_id, md5)
     try:
-        experiment_path = 'results/{}_{}'.format(cfg.experiment_id, md5)
         os.makedirs(experiment_path)
-    except:
+    except Exception:
         pass
+
     os.chdir(experiment_path)
 
     if "leave one out" in cfg.experiment_type:
         try:
             cfg.model_prefix = '{}_{}'.format(cfg.model_prefix, cfg.drug_index)
-        except:
-            raise Exception('Drug index not specified')
+        except Exception('Drug index not specified') as e:
+            raise e
+
     cfg.working_index = cfg.model_prefix + "_" + str(working_index).zfill(3)
 
     try:
         shutil.rmtree(cfg.working_index)
-    except:
+    except Exception:
         pass
     os.makedirs(cfg.working_index)
     os.chdir(cfg.working_index)
@@ -57,28 +58,22 @@ def prepare_workdir(cfg):
 
 
 if __name__ == '__main__':
-    ### Launching expr
+    # Launching expr
     working_index = master_args.working_index
     cfg = pertbio.config.Config(master_args.experiment_config_path)
-    cfg.ckpt_path_full = os.path.join('./', cfg.ckpt_name)   
+    cfg.ckpt_path_full = os.path.join('./', cfg.ckpt_name)
     md5 = pertbio.utils.md5(str(vars(cfg)))
-    try:
-        cfg.drug_index = master_args.drug_index
-    except:
-        pass
-    try:
-        seed = int(working_index) + cfg.seed
-    except:
-        seed = int(working_index) + 1000
-    set_seed(seed)
+    cfg.drug_index = master_args.drug_index if hasattr(master_args, "drug_index") else None
+    cfg.seed = working_index + cfg.seed if hasattr(cfg, "seed") else working_index + 1000
+    set_seed(cfg.seed)
     print(vars(cfg))
 
     cfg.dataset = prepare_workdir(cfg)
 
-    logger = pertbio.utils.time_logger(time_logger_step = 1, hierachy = 3)
+    logger = pertbio.utils.TimeLogger(time_logger_step=1, hierachy=3)
     args = cfg
     for i, stage in enumerate(cfg.stages):
-        logger.log("Training on stage {}/{} ...".format(i+1,len(cfg.stages)))
+        logger.log("Training on stage {}/{} ...".format(i + 1, len(cfg.stages)))
         args.sub_stages = stage['sub_stages']
         args.n_T = stage['nT']
         pertbio.train.train_model(args)

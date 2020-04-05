@@ -1,6 +1,7 @@
 __version__ = '0.1.1'
 VERSION = __version__
 
+
 def get_msg():
     # for test: installation completed
     changelog = """
@@ -51,6 +52,11 @@ def get_msg():
         * Add new kinetics
         * Add new ODE solvers
         * Add new envelop forms
+        
+        version 0.1.2
+        -- Apr 5, 2020 --
+        * Reformat for better code style
+        * Revise docs
         """
 
     print(changelog)

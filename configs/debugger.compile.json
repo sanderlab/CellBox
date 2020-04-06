@@ -12,8 +12,7 @@
   "n_x" : 99,
   "trainset_ratio": 0.7,
   "validset_ratio": 0.8,
-  "dropout_percent": 0.8,
-  "batchsize": 40,
+  "batchsize": 4,
 
   "envelop_form": "hill",
   "dT": 0.1,
@@ -23,7 +22,8 @@
   "ode_solver": "rk4",
   "ode_last_steps": 2,
 
-  "n_iter": 100,
+  "n_epoch": 10000,
+  "n_iter": 10000,
   "n_iter_buffer":5,
   "n_iter_patience":10,
 

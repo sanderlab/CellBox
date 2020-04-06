@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 
 
 def factory(cfg):
@@ -33,15 +34,15 @@ def s2c(cfg):
     train_data = cfg.expr[~testidx]
     dataset = {
         "node_index": cfg.node_index,
-        "pert_train": pert_train.iloc[valid_pos[:ntrain], :],
-        "pert_valid": pert_train.iloc[valid_pos[ntrain:], :],
+        "pert_train": pert_train.iloc[valid_pos[:ntrain], :].values,
+        "pert_valid": pert_train.iloc[valid_pos[ntrain:], :].values,
         "pert_test": cfg.pert[testidx],
         "pert_full": cfg.pert,
-        "train_data": train_data.iloc[valid_pos[:ntrain], :],
-        "valid_data": train_data.iloc[valid_pos[ntrain:], :],
+        "train_data": train_data.iloc[valid_pos[:ntrain], :].values,
+        "valid_data": train_data.iloc[valid_pos[ntrain:], :].values,
         "test_data": cfg.expr[testidx],
-        "train_pos": valid_pos[:ntrain],
-        "valid_pos": valid_pos[ntrain:],
+        "train_pos": valid_pos[:ntrain].values,
+        "valid_pos": valid_pos[ntrain:].values,
         "test_pos": testidx
     }
 
@@ -98,9 +99,9 @@ def random_partition(cfg):
         "pert_valid": cfg.pert.iloc[random_pos[ntrain:nvalid], :],
         "pert_test": cfg.pert.iloc[random_pos[nvalid:], :],
         "pert_full": cfg.pert,
-        "train_data": cfg.expr.iloc[random_pos[:ntrain], :],
-        "valid_data": cfg.expr.iloc[random_pos[ntrain:nvalid], :],
-        "test_data": cfg.expr.iloc[random_pos[nvalid:], :],
+        "expr_train": cfg.expr.iloc[random_pos[:ntrain], :],
+        "expr_valid": cfg.expr.iloc[random_pos[ntrain:nvalid], :],
+        "expr_test": cfg.expr.iloc[random_pos[nvalid:], :],
         "train_pos": random_pos[:ntrain],
         "valid_pos": random_pos[ntrain:nvalid],
         "test_pos": random_pos[nvalid:]

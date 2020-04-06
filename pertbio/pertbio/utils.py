@@ -29,7 +29,7 @@ def optimize(loss_in, lr, optimizer=tf.compat.v1.train.AdamOptimizer, var_list=N
     with tf.compat.v1.variable_scope("optimization", reuse=tf.compat.v1.AUTO_REUSE):
         opt = optimizer(lr)
         opt_op = opt.minimize(loss_in, var_list=var_list)
-    return opt_op, loss_in
+    return opt_op
 
 
 class TimeLogger:

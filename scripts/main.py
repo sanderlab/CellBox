@@ -1,3 +1,4 @@
+import sys
 import pertbio
 import os
 import numpy as np
@@ -21,13 +22,13 @@ def set_seed(in_seed):
 
 def prepare_workdir(in_cfg):
     # Read Data
-    in_cfg.pert = pd.read_csv(in_cfg.pert_file, header=None)
-    in_cfg.expr = pd.read_csv(in_cfg.expr_file, header=None)
+    in_cfg.pert = pd.read_csv(in_cfg.pert_file, header=None, dtype=np.float32)
+    in_cfg.expr = pd.read_csv(in_cfg.expr_file, header=None, dtype=np.float32)
     in_cfg.node_index = pd.read_csv(in_cfg.node_index_file, header=None, names=None)
     in_cfg.loo = pd.read_csv("data/loo_label.csv", header=None)
 
     # Create Output Folder
-    experiment_path = 'results/{}_{}'.format(cfg.experiment_id, md5)
+    experiment_path = 'results/{}_{}'.format(in_cfg.experiment_id, md5)
     try:
         os.makedirs(experiment_path)
     except Exception:
@@ -35,25 +36,27 @@ def prepare_workdir(in_cfg):
 
     os.chdir(experiment_path)
 
-    if "leave one out" in cfg.experiment_type:
+    if "leave one out" in in_cfg.experiment_type:
         try:
-            cfg.model_prefix = '{}_{}'.format(cfg.model_prefix, cfg.drug_index)
+            in_cfg.model_prefix = '{}_{}'.format(in_cfg.model_prefix, in_cfg.drug_index)
         except Exception('Drug index not specified') as e:
             raise e
 
-    cfg.working_index = cfg.model_prefix + "_" + str(working_index).zfill(3)
+    in_cfg.working_index = in_cfg.model_prefix + "_" + str(working_index).zfill(3)
 
     try:
-        shutil.rmtree(cfg.working_index)
+        shutil.rmtree(in_cfg.working_index)
     except Exception:
         pass
-    os.makedirs(cfg.working_index)
-    os.chdir(cfg.working_index)
+    os.makedirs(in_cfg.working_index)
+    os.chdir(in_cfg.working_index)
     with open("record_eval.csv", 'w') as f:
-        f.write("iter,train_loss,valid_loss,train_mse,valid_mse,test_mse,time_elapsed\n")
+        f.write("epoch,iter,train_loss,valid_loss,train_mse,valid_mse,test_mse,time_elapsed\n")
 
     # Load dataset
     dataset = pertbio.dataset.factory(cfg)
+
+    print('Working directory is ready at {}.'.format(experiment_path))
     return dataset
 
 

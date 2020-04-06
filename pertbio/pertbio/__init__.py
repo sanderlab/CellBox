@@ -1,5 +1,3 @@
-name = "pertbio"
-
 from pertbio.config import Config
 from pertbio.model import *
 from pertbio.kernel import *

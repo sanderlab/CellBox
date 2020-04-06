@@ -1,9 +1,7 @@
 import numpy as np
 import pertbio.kernel
-from pertbio.utils import loss, optimize
 import tensorflow as tf
-
-
+from pertbio.utils import loss, optimize
 # import tensorflow_probability as tfp
 
 
@@ -19,9 +17,9 @@ def factory(args):
     elif args.model == 'NN':
         return NN(args).build
     # elif args.model == 'Bayesian':
+    #     return BN(args).build()
     # TODO: baysian model
 
-    #     return BN(args).build()
     else:
         raise Exception("Illegal model name. Choose from [{}]".format(
             'CellBox, CoExp, LinReg, NN, CoExp_nonlinear, Bayesian'
@@ -32,22 +30,31 @@ class PertBio:
     def __init__(self, args):
         self.args = args
         self.n_x = args.n_x
-        self.mu = tf.compat.v1.placeholder(tf.float32, [None, self.n_x])
-        self.mu = tf.compat.v1.placeholder(tf.float32, [None, self.n_x])
-        self.x_gold = tf.compat.v1.placeholder(tf.float32, [None, self.n_x])
-        self.idx = tf.compat.v1.placeholder(tf.int32, [None])
+        self.pert_in = tf.compat.v1.placeholder(tf.float32, [None, self.n_x], name='pert_in')
+        self.expr_out = tf.compat.v1.placeholder(tf.float32, [None, self.n_x], name='expr_out')
+
+        # Prepare datasets
+        dataset = tf.data.Dataset.from_tensor_slices((self.pert_in, self.expr_out))
+        self.iter = tf.compat.v1.data.make_initializable_iterator(dataset
+                                                                  .shuffle(buffer_size=1024).batch(args.batchsize))
+        self.train_x, self.train_y = self.iter.get_next()
+        self.iter_eval = tf.compat.v1.data.make_initializable_iterator(dataset
+                                                                       .shuffle(buffer_size=1024).batch(args.batchsize))
+        self.eval_x, self.eval_y = self.iter_eval.get_next()
 
     def get_ops(self):
-        self.l1_lambda = tf.compat.v1.placeholder(tf.float32)
-        self.loss, self.loss_mse = loss(self.x_gold, self.xhat,
-                                        self.l1_lambda, self.params['W'])
-        self.lr = tf.compat.v1.placeholder(tf.float32)
-        self.op_optimize = optimize(self.loss, self.lr)
+        self.l1_lambda = tf.compat.v1.placeholder(tf.float32, name='lambda')
+        self.train_loss, self.train_mse_loss = loss(self.train_y, self.train_yhat, self.l1_lambda, self.params['W'])
+        self.eval_loss, self.eval_mse_loss = loss(self.eval_y, self.eval_yhat, self.l1_lambda, self.params['W'])
+
+        self.lr = tf.compat.v1.placeholder(tf.float32, name='lr')
+        self.op_optimize = optimize(self.train_loss, self.lr)
 
     def build(self):
         self.params = {}
         self.get_variables()
-        self.xhat = self.forward(self.mu)
+        self.train_yhat = self.forward(self.train_x)
+        self.eval_yhat = self.forward(self.eval_x)
         self.get_ops()
         return self
 
@@ -135,16 +142,16 @@ class CoExpNonlinear(CoExp):
 
     # TODO: fix after redesign CoExp class
     # def forward(self, mu):
-        # # during training, use mu_full, while during testing use mu
-        # idx = tf.map_fn(fn=get_idx_pair, elems=mu, dtype=tf.int32)
-        # # mask the models for prediction
-        # Ws = tf.gather_nd(self.params['Ws'], idx)  # batch_size x [Params,]
-        # bs = tf.gather_nd(self.params['bs'], idx)
-        # hidden = tf.tensordot(Ws, tf.transpose(x_gold), axes=1) + bs  # batch_size x [Params,] x batch_size
-        # hidden_transposed = tf.transpose(hidden, perm=[0, 2, 1])
-        # hidden_masked = tf.gather_nd(hidden_transposed, tf.compat.v2.where(tf.eye(tf.shape(mu)[0])))
-        # xhat = tf.matmul(tf.tanh(hidden_masked), self.params['W']) + tf.reshape(self.params['b'], [1, -1])
-        # return xhat
+    # # during training, use mu_full, while during testing use mu
+    # idx = tf.map_fn(fn=get_idx_pair, elems=mu, dtype=tf.int32)
+    # # mask the models for prediction
+    # Ws = tf.gather_nd(self.params['Ws'], idx)  # batch_size x [Params,]
+    # bs = tf.gather_nd(self.params['bs'], idx)
+    # hidden = tf.tensordot(Ws, tf.transpose(x_gold), axes=1) + bs  # batch_size x [Params,] x batch_size
+    # hidden_transposed = tf.transpose(hidden, perm=[0, 2, 1])
+    # hidden_masked = tf.gather_nd(hidden_transposed, tf.compat.v2.where(tf.eye(tf.shape(mu)[0])))
+    # xhat = tf.matmul(tf.tanh(hidden_masked), self.params['W']) + tf.reshape(self.params['b'], [1, -1])
+    # return xhat
 
 
 class LinReg(PertBio):
@@ -187,7 +194,8 @@ class CellBox(PertBio):
         self.envelop_fn = pertbio.kernel.get_envelop(self.args)
         self.ode_solver = pertbio.kernel.get_ode_solver(self.args)
         self._dxdt = pertbio.kernel.get_dxdt(self.args, self.params)
-        self.convergence_metric, self.xhat = self.forward(self.mu)
+        self.convergence_metric_train, self.train_yhat = self.forward(self.train_x)
+        self.convergence_metric_eval, self.eval_yhat = self.forward(self.eval_x)
         self.get_ops()
         return self
 

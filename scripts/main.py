@@ -1,4 +1,3 @@
-import sys
 import pertbio
 import os
 import numpy as np
@@ -22,8 +21,7 @@ def set_seed(in_seed):
 
 def prepare_workdir(in_cfg):
     # Read Data
-    in_cfg.pert = pd.read_csv(in_cfg.pert_file, header=None, dtype=np.float32)
-    in_cfg.expr = pd.read_csv(in_cfg.expr_file, header=None, dtype=np.float32)
+    in_cfg.root_dir = os.getcwd()
     in_cfg.node_index = pd.read_csv(in_cfg.node_index_file, header=None, names=None)
     in_cfg.loo = pd.read_csv("data/loo_label.csv", header=None)
 
@@ -50,14 +48,12 @@ def prepare_workdir(in_cfg):
         pass
     os.makedirs(in_cfg.working_index)
     os.chdir(in_cfg.working_index)
+
     with open("record_eval.csv", 'w') as f:
         f.write("epoch,iter,train_loss,valid_loss,train_mse,valid_mse,test_mse,time_elapsed\n")
 
-    # Load dataset
-    dataset = pertbio.dataset.factory(cfg)
-
     print('Working directory is ready at {}.'.format(experiment_path))
-    return dataset
+    return 0
 
 
 if __name__ == '__main__':
@@ -71,12 +67,13 @@ if __name__ == '__main__':
     set_seed(cfg.seed)
     print(vars(cfg))
 
-    cfg.dataset = prepare_workdir(cfg)
-
+    prepare_workdir(cfg)
     logger = pertbio.utils.TimeLogger(time_logger_step=1, hierachy=3)
     args = cfg
     for i, stage in enumerate(cfg.stages):
+        cfg = pertbio.dataset.factory(cfg)
         logger.log("Training on stage {}/{} ...".format(i + 1, len(cfg.stages)))
         args.sub_stages = stage['sub_stages']
         args.n_T = stage['nT']
-        pertbio.train.train_model(args)
+        model = pertbio.model.factory(args)
+        pertbio.train.train_model(model, args)

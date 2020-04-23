@@ -30,30 +30,25 @@ class PertBio:
     def __init__(self, args):
         self.args = args
         self.n_x = args.n_x
-        self.pert_in = tf.compat.v1.placeholder(tf.float32, [None, self.n_x], name='pert_in')
-        self.expr_out = tf.compat.v1.placeholder(tf.float32, [None, self.n_x], name='expr_out')
-
-        # Prepare datasets
-        dataset = tf.data.Dataset.from_tensor_slices((self.pert_in, self.expr_out))
-        self.iter = tf.compat.v1.data.make_initializable_iterator(dataset
-                                                                  .shuffle(buffer_size=1024).batch(args.batchsize))
-        self.train_x, self.train_y = self.iter.get_next()
-        self.iter_eval = tf.compat.v1.data.make_initializable_iterator(dataset
-                                                                       .shuffle(buffer_size=1024).batch(args.batchsize))
+        self.pert_in, self.expr_out = args.pert_in, args.expr_out
+        self.iter_train, self.iter_monitor, self.iter_eval = args.iter_train, args.iter_monitor, args.iter_eval
+        self.train_x, self.train_y = self.iter_train.get_next()
+        self.monitor_x, self.monitor_y = self.iter_monitor.get_next()
         self.eval_x, self.eval_y = self.iter_eval.get_next()
+        self.l1_lambda = self.args.l1_lambda
+        self.lr = self.args.lr
 
     def get_ops(self):
-        self.l1_lambda = tf.compat.v1.placeholder(tf.float32, name='lambda')
         self.train_loss, self.train_mse_loss = loss(self.train_y, self.train_yhat, self.l1_lambda, self.params['W'])
+        self.monitor_loss, self.monitor_mse_loss = loss(self.monitor_y, self.monitor_yhat, self.l1_lambda, self.params['W'])
         self.eval_loss, self.eval_mse_loss = loss(self.eval_y, self.eval_yhat, self.l1_lambda, self.params['W'])
-
-        self.lr = tf.compat.v1.placeholder(tf.float32, name='lr')
         self.op_optimize = optimize(self.train_loss, self.lr)
 
     def build(self):
         self.params = {}
         self.get_variables()
         self.train_yhat = self.forward(self.train_x)
+        self.monitor_yhat = self.forward(self.monitor_x)
         self.eval_yhat = self.forward(self.eval_x)
         self.get_ops()
         return self
@@ -195,6 +190,7 @@ class CellBox(PertBio):
         self.ode_solver = pertbio.kernel.get_ode_solver(self.args)
         self._dxdt = pertbio.kernel.get_dxdt(self.args, self.params)
         self.convergence_metric_train, self.train_yhat = self.forward(self.train_x)
+        self.convergence_metric_monitor, self.monitor_yhat = self.forward(self.monitor_x)
         self.convergence_metric_eval, self.eval_yhat = self.forward(self.eval_x)
         self.get_ops()
         return self

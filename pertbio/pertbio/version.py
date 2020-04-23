@@ -62,6 +62,10 @@ def get_msg():
         -- Apr 5, 2020 --
         * Reformat for better code style
         * Revise docs
+
+        version 0.2.2
+        -- Apr23, 2020 --
+        * Add support to tf.Datasets
         """
 
     print(changelog)

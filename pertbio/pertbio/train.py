@@ -36,40 +36,25 @@ def train_substage(model, sess, lr_val, l1lamda, n_epoch, n_iter, n_iter_buffer,
 
     n_unchanged = 0
     idx_iter = 0
-    train_set = {
-        model.pert_in: args.dataset['pert_train'].values,
-        model.expr_out: args.dataset['expr_train'].values,
-        model.lr: lr_val,
-        model.l1_lambda: l1lamda
-    }
-    valid_set = {
-        model.pert_in: args.dataset['pert_valid'].values,
-        model.expr_out: args.dataset['expr_valid'].values,
-        model.l1_lambda: l1lamda
-    }
-    test_set = {
-        model.pert_in: args.dataset['pert_test'].values,
-        model.expr_out: args.dataset['expr_test'].values
-    }
+    for key in args.feed_dicts:
+        args.feed_dicts[key].update({model.lr: lr_val, model.l1_lambda: l1lamda})
 
+    sess.run(model.iter_monitor.initializer, feed_dict=args.feed_dicts['valid_set'])
     for idx_epoch in range(n_epoch):
-
-        sess.run(model.iter.initializer, feed_dict=train_set)
+        sess.run(model.iter_train.initializer, feed_dict=args.feed_dicts['train_set'])
         while True:
             if idx_iter > n_iter or n_unchanged > n_iter_patience:
                 break
-
-            # training step
             t0 = time.clock()
             try:
-                _, loss_train_i, loss_train_mse_i = sess.run((model.op_optimize, model.train_loss,
-                                                              model.train_mse_loss), feed_dict=train_set)
-            except OutOfRangeError:
+                _, loss_train_i, loss_train_mse_i = sess.run(
+                    (model.op_optimize, model.train_loss, model.train_mse_loss), feed_dict=args.feed_dicts['train_set'])
+            except OutOfRangeError: # for iter_train
                 break
 
             # record training
-            sess.run(model.iter_eval.initializer, feed_dict=valid_set)
-            loss_valid_i, loss_valid_mse_i = sess.run((model.eval_loss, model.eval_mse_loss), feed_dict=valid_set)
+            loss_valid_i, loss_valid_mse_i = sess.run(
+                (model.monitor_loss, model.monitor_mse_loss), feed_dict=args.feed_dicts['valid_set'])
             new_loss = best_params.avg_n_iters_loss(loss_valid_i)
             if args.export_verbose >= 3:
                 print("Epoch:{}/{}\tIteration: {}/{}\tnew_loss:{}\tbuffer_loss:{}\tbest:{}\tTolerance: {}/{}".format(
@@ -79,7 +64,6 @@ def train_substage(model, sess, lr_val, l1lamda, n_epoch, n_iter, n_iter_buffer,
             append_record("record_eval.csv",
                           [idx_epoch, idx_iter, loss_train_i, loss_valid_i, loss_train_mse_i,
                            loss_valid_mse_i, None, time.clock() - t0])
-
             # early stopping
             idx_iter += 1
             if new_loss < best_params.loss_min:
@@ -89,18 +73,17 @@ def train_substage(model, sess, lr_val, l1lamda, n_epoch, n_iter, n_iter_buffer,
             else:
                 n_unchanged += 1
 
-        # Evaluation on valid set
-        t0 = time.clock()
-        loss_valid_i, loss_valid_mse_i = eval_model(sess, model.iter_eval, (model.eval_loss, model.eval_mse_loss),
-                                                    valid_set)
-        append_record("record_eval.csv", [idx_epoch, None, None, loss_valid_i, None, loss_valid_mse_i,
-                                          None, time.clock() - t0])
-        if idx_iter > n_iter or n_unchanged > n_iter_patience:
-            break
+    # Evaluation on valid set
+    t0 = time.clock()
+    sess.run(model.iter_eval.initializer, feed_dict=args.feed_dicts['valid_set'])
+    loss_valid_i, loss_valid_mse_i = eval_model(sess, model.iter_eval, (model.eval_loss, model.eval_mse_loss),
+                                                args.feed_dicts['valid_set'])
+    append_record("record_eval.csv", [-1, None, None, loss_valid_i, None, loss_valid_mse_i, None, time.clock() - t0])
 
     # Evaluation on test set
     t0 = time.clock()
-    loss_test_mse = eval_model(sess, model.iter_eval, model.eval_mse_loss, test_set)
+    sess.run(model.iter_eval.initializer, feed_dict=args.feed_dicts['test_set'])
+    loss_test_mse = eval_model(sess, model.iter_eval, model.eval_mse_loss, args.feed_dicts['test_set'])
     append_record("record_eval.csv", [-1, None, None, None, None, None, loss_test_mse, time.clock() - t0])
 
     best_params.save()
@@ -126,11 +109,8 @@ def eval_model(sess, eval_iter, obj_fn, eval_dict):
     return np.mean(np.array(eval_results), axis=0)
 
 
-def train_model(args):
+def train_model(model, args):
     args.logger = TimeLogger(time_logger_step=1, hierachy=2)
-
-    # Constructing model
-    model = pertbio.model.factory(args)
 
     # Check if all variables in scope
     # TODO: put variables under appropriate scopes
@@ -245,10 +225,8 @@ class Screenshot(dict):
             self.update(params)
 
         if self.export_verbose > 1 or self.export_verbose == -1:  # no params but y_hat
-            test_set = {model.pert_in: args.dataset['pert_test'].values,
-                        model.expr_out: args.dataset['expr_test'].values}
-            sess.run(model.iter_eval.initializer, feed_dict=test_set)
-            y_hat = sess.run(model.eval_yhat, feed_dict=test_set)
+            sess.run(model.iter_eval.initializer, feed_dict=model.args.feed_dicts['test_set'])
+            y_hat = sess.run(model.eval_yhat, feed_dict=model.args.feed_dicts['test_set'])
             y_hat = pd.DataFrame(y_hat, columns=node_index[0])
             self.update({'y_hat': y_hat})
 

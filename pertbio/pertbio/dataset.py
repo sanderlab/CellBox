@@ -1,24 +1,58 @@
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+import os
 
 
 def factory(cfg):
 
+        cfg.pert_in = tf.compat.v1.placeholder(tf.float32, [None, cfg.n_x], name='pert_in')
+        cfg.expr_out = tf.compat.v1.placeholder(tf.float32, [None, cfg.n_x], name='expr_out')
+        cfg.pert = pd.read_csv(os.path.join(cfg.root_dir, cfg.pert_file), header=None, dtype=np.float32)
+        cfg.expr = pd.read_csv(os.path.join(cfg.root_dir, cfg.expr_file), header=None, dtype=np.float32)
+    cfg.l1_lambda = tf.compat.v1.placeholder(tf.float32, name='lambda')
+    cfg.lr = tf.compat.v1.placeholder(tf.float32, name='lr')
+
+    # Prepare dataset iterators
+    dataset = tf.data.Dataset.from_tensor_slices((cfg.pert_in, cfg.expr_out))
+    cfg.iter_train = tf.compat.v1.data.make_initializable_iterator(
+        dataset.batch(cfg.batchsize).shuffle(buffer_size=1024, reshuffle_each_iteration=True))
+    cfg.iter_monitor = tf.compat.v1.data.make_initializable_iterator(
+        dataset.repeat().batch(cfg.batchsize).shuffle(buffer_size=1024, reshuffle_each_iteration=True))
+    cfg.iter_eval = tf.compat.v1.data.make_initializable_iterator(dataset.batch(cfg.batchsize))
+
+    # Data partition
     if cfg.experiment_type == 'random partition' or cfg.experiment_type == 'full data':
-        return random_partition(cfg)
+        cfg.dataset = random_partition(cfg)
 
-    if cfg.experiment_type == 'leave one out (w/o single)':
-        return loo(cfg, singles=False)
+    elif cfg.experiment_type == 'leave one out (w/o single)':
+        cfg.dataset = loo(cfg, singles=False)
 
-    if cfg.experiment_type == 'leave one out (w/ single)':
-        return loo(cfg, singles=True)
+    elif cfg.experiment_type == 'leave one out (w/ single)':
+        cfg.dataset = loo(cfg, singles=True)
 
-    if cfg.experiment_type == 'single to combo':
-        return s2c(cfg)
+    elif cfg.experiment_type == 'single to combo':
+        cfg.dataset = s2c(cfg)
+    else:
+        raise Exception('Invalid experiment type. \nValid options: [random partition, leave one out (w/o single), '
+                        'leave one out (w/ single), full data, single to combo]')
 
-    raise Exception('Invalid experiment type. \nValid options: [random partition, leave one out (w/o single), '
-                    'leave one out (w/ single), full data, single to combo]')
+    # Prepare feed_dicts
+    cfg.feed_dicts = {
+        'train_set' : {
+            cfg.pert_in: cfg.dataset['pert_train'],
+            cfg.expr_out: cfg.dataset['expr_train'],
+        },
+        'valid_set': {
+            cfg.pert_in: cfg.dataset['pert_valid'],
+            cfg.expr_out: cfg.dataset['expr_valid'],
+        },
+        'test_set':{
+            cfg.pert_in: cfg.dataset['pert_test'],
+            cfg.expr_out: cfg.dataset['expr_test']
+        }
+    }
+    return cfg
 
 
 def s2c(cfg):
@@ -84,6 +118,7 @@ def loo(cfg, singles):
 
 
 def random_partition(cfg):
+
     nexp, n_x = cfg.pert.shape
     nvalid = int(nexp * cfg.trainset_ratio)
     ntrain = int(nvalid * cfg.validset_ratio)
@@ -95,16 +130,19 @@ def random_partition(cfg):
 
     dataset = {
         "node_index": cfg.node_index,
-        "pert_train": cfg.pert.iloc[random_pos[:ntrain], :],
-        "pert_valid": cfg.pert.iloc[random_pos[ntrain:nvalid], :],
-        "pert_test": cfg.pert.iloc[random_pos[nvalid:], :],
         "pert_full": cfg.pert,
-        "expr_train": cfg.expr.iloc[random_pos[:ntrain], :],
-        "expr_valid": cfg.expr.iloc[random_pos[ntrain:nvalid], :],
-        "expr_test": cfg.expr.iloc[random_pos[nvalid:], :],
         "train_pos": random_pos[:ntrain],
         "valid_pos": random_pos[ntrain:nvalid],
         "test_pos": random_pos[nvalid:]
     }
+
+        dataset.update({
+            "pert_train": cfg.pert.iloc[random_pos[:ntrain], :].values,
+            "pert_valid": cfg.pert.iloc[random_pos[ntrain:nvalid], :].values,
+            "pert_test": cfg.pert.iloc[random_pos[nvalid:], :].values,
+            "expr_train": cfg.expr.iloc[random_pos[:ntrain], :].values,
+            "expr_valid": cfg.expr.iloc[random_pos[ntrain:nvalid], :].values,
+            "expr_test": cfg.expr.iloc[random_pos[nvalid:], :].values
+        })
 
     return dataset

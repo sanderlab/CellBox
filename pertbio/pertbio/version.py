@@ -66,6 +66,9 @@ def get_msg():
         version 0.2.2
         -- Apr23, 2020 --
         * Add support to tf.Datasets
+        * Add support to tf.sparse
+        * Prepare for sparse single-cell data
+
         """
 
     print(changelog)

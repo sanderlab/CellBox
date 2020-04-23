@@ -22,7 +22,9 @@ def set_seed(in_seed):
 def prepare_workdir(in_cfg):
     # Read Data
     in_cfg.root_dir = os.getcwd()
-    in_cfg.node_index = pd.read_csv(in_cfg.node_index_file, header=None, names=None)
+    in_cfg.node_index = pd.read_csv(in_cfg.node_index_file, header=None, names=None) \
+        if hasattr(in_cfg, 'node_index_file') else pd.DataFrame(np.arange(in_cfg.n_x))
+
     in_cfg.loo = pd.read_csv("data/loo_label.csv", header=None)
 
     # Create Output Folder

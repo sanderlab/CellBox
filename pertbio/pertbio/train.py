@@ -98,7 +98,7 @@ def append_record(filename, contents):
         f.write('\n')
 
 
-def eval_model(sess, eval_iter, obj_fn, eval_dict):
+def eval_model(sess, eval_iter, obj_fn, eval_dict, return_avg=True):
     sess.run(eval_iter.initializer, feed_dict=eval_dict)
     eval_results = []
     while True:
@@ -106,7 +106,10 @@ def eval_model(sess, eval_iter, obj_fn, eval_dict):
             eval_results.append(sess.run(obj_fn, feed_dict=eval_dict))
         except OutOfRangeError:
             break
-    return np.mean(np.array(eval_results), axis=0)
+    if return_avg:
+        return np.mean(np.array(eval_results), axis=0)
+    else:
+        return np.vstack(eval_results)
 
 
 def train_model(model, args):
@@ -226,7 +229,7 @@ class Screenshot(dict):
 
         if self.export_verbose > 1 or self.export_verbose == -1:  # no params but y_hat
             sess.run(model.iter_eval.initializer, feed_dict=model.args.feed_dicts['test_set'])
-            y_hat = sess.run(model.eval_yhat, feed_dict=model.args.feed_dicts['test_set'])
+            y_hat = eval_model(sess, model.iter_eval, model.eval_yhat, args.feed_dicts['test_set'], return_avg=False)
             y_hat = pd.DataFrame(y_hat, columns=node_index[0])
             self.update({'y_hat': y_hat})
 

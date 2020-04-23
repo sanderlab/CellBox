@@ -13,9 +13,9 @@ def factory(args):
     elif args.model == 'CoExp_nonlinear':
         return CoExpNonlinear(args).build()
     elif args.model == 'LinReg':
-        return LinReg(args).build
+        return LinReg(args).build()
     elif args.model == 'NN':
-        return NN(args).build
+        return NN(args).build()
     # elif args.model == 'Bayesian':
     #     return BN(args).build()
     # TODO: baysian model

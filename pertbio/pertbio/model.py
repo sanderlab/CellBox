@@ -207,7 +207,10 @@ class CellBox(PertBio):
         return tf.reshape(xs[-1], [self.n_x]), tf.concat([mean, sd, dxdt], axis=0)
 
     def forward(self, mu):
-        mu_t = tf.transpose(mu)
+        if isinstance(mu, tf.SparseTensor):
+            mu_t = tf.sparse.to_dense(tf.sparse.transpose(mu))
+        else:
+            mu_t = tf.transpose(mu)
         xs = self.ode_solver(self.x_0, mu_t, self.args.dT, self.args.n_T, self._dxdt)
         # [n_T, n_x, batch_size]
         xs = xs[-self.args.ode_last_steps:]

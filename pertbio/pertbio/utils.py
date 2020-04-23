@@ -5,6 +5,8 @@ import hashlib
 
 
 def loss(x_gold, x_hat, l1, W):
+    if isinstance(x_gold, tf.SparseTensor):
+        x_gold = tf.sparse.to_dense(x_gold)
     with tf.compat.v1.variable_scope("loss", reuse=True):
         loss_mse = tf.reduce_mean(tf.square((x_gold - x_hat)))
         loss_full = loss_mse + l1 * tf.reduce_sum(tf.abs(W))

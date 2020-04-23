@@ -2,10 +2,18 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 import os
+from scipy import sparse
 
 
 def factory(cfg):
 
+    # Prepare data
+    if cfg.sparse_data:
+        cfg.pert_in = tf.compat.v1.sparse.placeholder(tf.float32, [None, cfg.n_x], name='pert_in')
+        cfg.expr_out = tf.compat.v1.sparse.placeholder(tf.float32, [None, cfg.n_x], name='expr_out')
+        cfg.pert = sparse.load_npz(os.path.join(cfg.root_dir, cfg.pert_file))
+        cfg.expr = sparse.load_npz(os.path.join(cfg.root_dir, cfg.expr_file))
+    else:
         cfg.pert_in = tf.compat.v1.placeholder(tf.float32, [None, cfg.n_x], name='pert_in')
         cfg.expr_out = tf.compat.v1.placeholder(tf.float32, [None, cfg.n_x], name='expr_out')
         cfg.pert = pd.read_csv(os.path.join(cfg.root_dir, cfg.pert_file), header=None, dtype=np.float32)
@@ -123,7 +131,7 @@ def random_partition(cfg):
     nvalid = int(nexp * cfg.trainset_ratio)
     ntrain = int(nvalid * cfg.validset_ratio)
     try:
-        random_pos = np.genfromtxt('random_pos.csv')
+        random_pos = np.genfromtxt('random_pos.csv', fmt='%d')
     except Exception:
         random_pos = np.random.choice(range(nexp), nexp, replace=False)
         np.savetxt('random_pos.csv', random_pos, fmt='%d')
@@ -136,6 +144,16 @@ def random_partition(cfg):
         "test_pos": random_pos[nvalid:]
     }
 
+    if cfg.sparse_data:
+        dataset.update({
+            "pert_train": npz_to_feedable_arrays(cfg.pert[random_pos[:ntrain], :]),
+            "pert_valid": npz_to_feedable_arrays(cfg.pert[random_pos[ntrain:nvalid], :]),
+            "pert_test": npz_to_feedable_arrays(cfg.pert[random_pos[nvalid:], :]),
+            "expr_train": npz_to_feedable_arrays(cfg.expr[random_pos[:ntrain], :]),
+            "expr_valid": npz_to_feedable_arrays(cfg.expr[random_pos[ntrain:nvalid], :]),
+            "expr_test": npz_to_feedable_arrays(cfg.expr[random_pos[nvalid:], :])
+        })
+    else:
         dataset.update({
             "pert_train": cfg.pert.iloc[random_pos[:ntrain], :].values,
             "pert_valid": cfg.pert.iloc[random_pos[ntrain:nvalid], :].values,
@@ -146,3 +164,11 @@ def random_partition(cfg):
         })
 
     return dataset
+
+
+def npz_to_feedable_arrays(npz):
+    coo = npz.tocoo()
+    indices = [[i, j] for i, j in zip(coo.row, coo.col)]
+    values = coo.data
+    dense_shape = coo.shape
+    return indices, values, dense_shape

@@ -20,7 +20,7 @@ Alternatively, in project folder, do the same command
 The following command will install pertbio from a particular branch using the '@' notation:
 
 ```
-pip install git+https://github.com/dfci/CellBox.git@Stable-version-for-publish#egg=pertbio\&subdirectory=pertbio
+pip install git+https://github.com/dfci/CellBox.git@version_for_initial_manuscript#egg=pertbio\&subdirectory=pertbio
 ```
 
 ## Install using setup.py

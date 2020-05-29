@@ -1,28 +1,10 @@
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dfci/CellBox/master)
-
-# Installation
-
-In pertbio folder run:
-
-```
-python3.6 setup.py install
-```
-
-Only python3.6 supported. Anaconda or pipenv is recommended to create python environment
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dfci/CellBox/version_for_initial_manuscript)
 
 # Quick Start
-Now you can test if the installation is successful
-
-```
-import pertbio
-pertbio.VERSION
-```
-
-## Quick Start with Binder 
 
 Easily try PertBio online with Binder 
 
-1. Go to: https://mybinder.org/v2/gh/dfci/CellBox/master
+1. Go to: https://mybinder.org/v2/gh/dfci/CellBox/version_for_initial_manuscript
 2. From the New dropdown, click Terminal 
 3. Run the following command: 
 
@@ -31,6 +13,31 @@ python scripts/main.py -config=configs/example.cfg.json
 ```
 
 Alternatively, in project folder, do the same command
+
+# Installation
+
+## Install using pip 
+The following command will install pertbio from a particular branch using the '@' notation:
+
+```
+pip install git+https://github.com/dfci/CellBox.git@Stable-version-for-publish#egg=pertbio\&subdirectory=pertbio
+```
+
+## Install using setup.py
+Clone repository and in the pertbio folder run:
+
+```
+python3.6 setup.py install
+```
+
+Only python3.6 supported. Anaconda or pipenv is recommended to create python environment. 
+
+Now you can test if the installation is successful
+
+```
+import pertbio
+pertbio.VERSION
+```
 
 # Project Structure
 

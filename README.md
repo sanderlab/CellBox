@@ -6,7 +6,7 @@ Easily try PertBio online with Binder
 
 1. Go to: https://mybinder.org/v2/gh/dfci/CellBox/version_for_initial_manuscript
 2. From the New dropdown, click Terminal 
-3. Run the following command: 
+3. Run the following command for a short example of model training process: 
 
 ```
 python scripts/main.py -config=configs/example.cfg.json

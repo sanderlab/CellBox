@@ -1,5 +1,4 @@
 {
-  "l1_lambda": [0.01, 0.02],
-  "l2_lambda": [0.1, 0.2],
-  "ode_solver": ["heun", "rk4", "euler"]
+  "l1lambda": [0, 0.0001, 0.01],
+  "l2lambda": [0, 0.0001, 0.01]
 }

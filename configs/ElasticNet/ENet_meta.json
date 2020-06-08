@@ -1,0 +1,53 @@
+{
+  "experiment_id": "ENet",
+  "experiment_type": "random partition",
+  "model": "CellBox",
+  "sparse_data": false,
+  "pert_file": "data/pert.csv",
+  "expr_file": "data/expr.csv",
+  "node_index_file": "data/node_Index.csv",
+  "pert_v_file": "data/prediction_in.csv",
+  "prediction_output_file": "data/Predicted_Valid.csv",
+  "n_protein_nodes": 82,
+  "n_activity_nodes": 87,
+  "n_x" : 99,
+  "trainset_ratio": 0.7,
+  "validset_ratio": 0.8,
+  "batchsize": 4,
+
+  "envelop_form": "hill",
+  "dT": 0.1,
+  "polynomial_k": 3,
+  "envelop":2,
+  "ode_degree": 1,
+  "ode_solver": "heun",
+  "ode_last_steps": 2,
+  "l1lambda": 1e-4,
+  "l2lambda": 1e-4,
+
+  "n_epoch": 10000,
+  "n_iter": 10000,
+  "n_iter_buffer":50,
+  "n_iter_patience":20,
+
+  "stages":[{
+    "nT": 100,
+    "sub_stages":[
+        {"lr_val": 0.1,"l1lambda": 0.01, "n_iter_patience":100},
+        {"lr_val": 0.01,"l1lambda": 0.01},
+        {"lr_val": 0.01},
+        {"lr_val": 0.001}
+    ]},{
+    "nT": 200,
+    "sub_stages":[
+        {"lr_val": 0.001}
+    ]},{
+    "nT": 400,
+    "sub_stages":[
+        {"lr_val": 0.001}
+    ]}],
+
+    "export_verbose": 3,
+    "model_prefix": "b11",
+    "ckpt_name": "model11.ckpt"
+}

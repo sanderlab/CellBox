@@ -1,5 +1,5 @@
 {
-  "experiment_id": "Debugging",
+  "experiment_id": "Example",
   "experiment_type": "random partition",
   "model": "CellBox",
   "sparse_data": false,
@@ -22,6 +22,7 @@
   "ode_degree": 1,
   "ode_solver": "rk4",
   "ode_last_steps": 2,
+  "use_l1": true,
 
   "n_epoch": 10000,
   "n_iter": 10000,
@@ -31,18 +32,18 @@
   "stages":[{
     "nT": 100,
     "sub_stages":[
-        {"lr_val": 0.1,"l1lamda": 0.01, "n_iter_patience":100},
-        {"lr_val": 0.01,"l1lamda": 0.01},
-        {"lr_val": 0.01,"l1lamda": 0.0001},
-        {"lr_val": 0.001,"l1lamda": 0.00001}
+        {"lr_val": 0.1,"l1lambda": 0.01, "n_iter_patience":100},
+        {"lr_val": 0.01,"l1lambda": 0.01},
+        {"lr_val": 0.01,"l1lambda": 0.0001},
+        {"lr_val": 0.001,"l1lambda": 0.00001}
     ]},{
     "nT": 200,
     "sub_stages":[
-        {"lr_val": 0.001,"l1lamda": 0.0001}
+        {"lr_val": 0.001,"l1lambda": 0.0001}
     ]},{
     "nT": 400,
     "sub_stages":[
-        {"lr_val": 0.001,"l1lamda": 0.0001}
+        {"lr_val": 0.001,"l1lambda": 0.0001}
     ]}],
 
     "export_verbose": 3,

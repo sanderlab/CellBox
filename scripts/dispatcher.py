@@ -38,7 +38,7 @@ for modifier, barcode in zip(modifiers, barcodes):
     job_cfg_path = os.path.join(wdr, 'grid' + barcode + '.json')
     json.dump(job, open(job_cfg_path, 'w'), indent=4)
     for i in range(args.duplicates):
-        print('python scripts/main.py --experiment_config_path={} --index={}'.format(job_cfg_path, i))
+        print('python scripts/main.py --experiment_config_path={} --working_index={}'.format(job_cfg_path, i))
 
 
 

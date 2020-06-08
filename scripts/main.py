@@ -8,8 +8,8 @@ import argparse
 
 parser = argparse.ArgumentParser(description='CellBox main script')
 parser.add_argument('-config', '--experiment_config_path', required=True, type=str, help="Path of experiment config")
-parser.add_argument('-i', '--working_index', default=0)
-parser.add_argument('-drug', '--drug_index', required=False)
+parser.add_argument('-i', '--working_index', default=0, type=int)
+parser.add_argument('-drug', '--drug_index', required=False, type=int)
 master_args = parser.parse_args()
 
 

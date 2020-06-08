@@ -9,7 +9,7 @@ import time
 from tensorflow.errors import OutOfRangeError
 
 
-def train_substage(model, sess, lr_val, l1lamda, n_epoch, n_iter, n_iter_buffer, n_iter_patience, args):
+def train_substage(model, sess, lr_val, l1_lambda, l2_lambda, n_epoch, n_iter, n_iter_buffer, n_iter_patience, args):
     """
     Training function that does one stage of training. The stage training can be repeated and modified to give better
     training result.
@@ -18,7 +18,8 @@ def train_substage(model, sess, lr_val, l1lamda, n_epoch, n_iter, n_iter_buffer,
         model (CellBox): an CellBox instance
         sess (tf.Session): current session, need reinitialization for every nT
         lr_val (float): learning rate (read in from config file)
-        l1lamda (float): l1 regularization weight
+        l1_lambda (float): l1 regularization weight
+        l2_lambda (float): l2 regularization weight
         n_epoch (int): maximum number of epochs
         n_iter (int): maximum number of iterations
         n_iter_buffer (int): training loss moving average window
@@ -37,7 +38,11 @@ def train_substage(model, sess, lr_val, l1lamda, n_epoch, n_iter, n_iter_buffer,
     n_unchanged = 0
     idx_iter = 0
     for key in args.feed_dicts:
-        args.feed_dicts[key].update({model.lr: lr_val, model.l1_lambda: l1lamda})
+        args.feed_dicts[key].update({
+            model.lr: lr_val,
+            model.l1_lambda: l1_lambda,
+            model.l2_lambda: l2_lambda
+        })
 
     sess.run(model.iter_monitor.initializer, feed_dict=args.feed_dicts['valid_set'])
     for idx_epoch in range(n_epoch):
@@ -142,7 +147,9 @@ def train_model(model, args):
         n_iter = substage['n_iter'] if 'n_iter' in substage else args.n_iter
         n_iter_patience = substage['n_iter_patience'] if 'n_iter_patience' in substage else args.n_iter_patience
         n_epoch = substage['n_epoch'] if 'n_epoch' in substage else args.n_epoch
-        train_substage(model, sess, substage['lr_val'], substage['l1lamda'], n_epoch=n_epoch,
+        l1 = substage['l1lambda'] if 'l1lambda' in substage else args.l1lambda if hasattr(args, 'l1lambda') else 0
+        l2 = substage['l2lambda'] if 'l2lambda' in substage else args.l2lambda if hasattr(args, 'l2lambda') else 0
+        train_substage(model, sess, substage['lr_val'], l1_lambda=l1, l2_lambda=l2, n_epoch=n_epoch,
                        n_iter=n_iter, n_iter_buffer=n_iter_buffer, n_iter_patience=n_iter_patience, args=args)
 
     # Terminate session

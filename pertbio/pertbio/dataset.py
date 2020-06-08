@@ -18,7 +18,8 @@ def factory(cfg):
         cfg.expr_out = tf.compat.v1.placeholder(tf.float32, [None, cfg.n_x], name='expr_out')
         cfg.pert = pd.read_csv(os.path.join(cfg.root_dir, cfg.pert_file), header=None, dtype=np.float32)
         cfg.expr = pd.read_csv(os.path.join(cfg.root_dir, cfg.expr_file), header=None, dtype=np.float32)
-    cfg.l1_lambda = tf.compat.v1.placeholder(tf.float32, name='lambda')
+    cfg.l1_lambda_placeholder = tf.compat.v1.placeholder(tf.float32, name='l1_lambda')
+    cfg.l2_lambda_placeholder = tf.compat.v1.placeholder(tf.float32, name='l2_lambda')
     cfg.lr = tf.compat.v1.placeholder(tf.float32, name='lr')
 
     # Prepare dataset iterators

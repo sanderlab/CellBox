@@ -35,13 +35,16 @@ class PertBio:
         self.train_x, self.train_y = self.iter_train.get_next()
         self.monitor_x, self.monitor_y = self.iter_monitor.get_next()
         self.eval_x, self.eval_y = self.iter_eval.get_next()
-        self.l1_lambda = self.args.l1_lambda
+        self.l1_lambda, self.l2_lambda = self.args.l1_lambda_placeholder, self.args.l2_lambda_placeholder
         self.lr = self.args.lr
 
     def get_ops(self):
-        self.train_loss, self.train_mse_loss = loss(self.train_y, self.train_yhat, self.l1_lambda, self.params['W'])
-        self.monitor_loss, self.monitor_mse_loss = loss(self.monitor_y, self.monitor_yhat, self.l1_lambda, self.params['W'])
-        self.eval_loss, self.eval_mse_loss = loss(self.eval_y, self.eval_yhat, self.l1_lambda, self.params['W'])
+        self.train_loss, self.train_mse_loss = loss(self.train_y, self.train_yhat,
+                                                    self.params['W'], self.l1_lambda, self.l2_lambda)
+        self.monitor_loss, self.monitor_mse_loss = loss(self.monitor_y, self.monitor_yhat,
+                                                        self.params['W'], self.l1_lambda, self.l2_lambda)
+        self.eval_loss, self.eval_mse_loss = loss(self.eval_y, self.eval_yhat,
+                                                  self.params['W'], self.l1_lambda, self.l2_lambda)
         self.op_optimize = optimize(self.train_loss, self.lr)
 
     def build(self):

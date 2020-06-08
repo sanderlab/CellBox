@@ -64,10 +64,15 @@ def get_msg():
         * Revise docs
 
         version 0.2.2
-        -- Apr23, 2020 --
+        -- Apr 23, 2020 --
         * Add support to tf.Datasets
         * Add support to tf.sparse
         * Prepare for sparse single-cell data
+        
+        version 0.2.3
+        -- June 8, 2020 --
+        * Add support to L2 loss (alone or together with L1, i.e. elastic net)
+        * Clean the example configs folder
 
         """
 

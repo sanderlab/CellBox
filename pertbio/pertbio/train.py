@@ -43,6 +43,7 @@ def train_substage(model, sess, lr_val, l1_lambda, l2_lambda, n_epoch, n_iter, n
             model.l1_lambda: l1_lambda,
             model.l2_lambda: l2_lambda
         })
+    args.logger.log("--------- lr: {}\tl1: {}\tl2: {}\t".format(lr_val, l1_lambda, l2_lambda))
 
     sess.run(model.iter_monitor.initializer, feed_dict=args.feed_dicts['valid_set'])
     for idx_epoch in range(n_epoch):
@@ -92,7 +93,6 @@ def train_substage(model, sess, lr_val, l1_lambda, l2_lambda, n_epoch, n_iter, n
     append_record("record_eval.csv", [-1, None, None, None, None, None, loss_test_mse, time.clock() - t0])
 
     best_params.save()
-    args.logger.log("--------- lr: {}\tl1: {}\tl2: {}\t".format(lr_val, l1, l2))
     args.logger.log("------------------ Substage {} finished!-------------------".format(substage_i))
     save_model(args.saver, sess, './' + args.ckpt_name)
 

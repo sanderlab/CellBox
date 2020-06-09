@@ -33,7 +33,7 @@
   "stages":[{
     "nT": 100,
     "sub_stages":[
-        {"lr_val": 0.1,"l1lambda": 0.01, "l2lambda":0, "n_iter_patience":200},
+        {"lr_val": 0.1,"l1lambda": 0.01, "l2lambda":0, "n_iter_patience":500},
         {"lr_val": 0.01,"l1lambda": 0.01},
         {"lr_val": 0.01},
         {"lr_val": 0.001}

@@ -37,7 +37,7 @@ for modifier, barcode in zip(modifiers, barcodes):
     job.update(modifier)
     job.update({'experiment_id': job['experiment_id'] + barcode})
     job_cfg_path = os.path.join(wdr, 'grid' + barcode + '.json')
-    json.dump(job, open(job_cfg_path, 'w'), indent=4)
+    json.dump(job, open(job_cfg_path, 'w'), indent=4, sort_keys=True)
     # for i in range(args.duplicates):
     #     print('python scripts/main.py --experiment_config_path={} --working_index={}'.format(job_cfg_path, i))
     os.system("sbatch {} {}".format(bash_file, job_cfg_path))

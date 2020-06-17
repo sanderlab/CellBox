@@ -13,8 +13,12 @@ def get_envelop(args):
             args.envelop_fn = lambda x: x**k/(1+x**k)*tf.sign(x)
     elif args.envelop_form == 'hill':
         k = args.polynomial_k
-        assert k > 1, "Hill coefficient has to be k>2."
+        assert k > 1, "Hill coefficient has to be k>=2."
         args.envelop_fn = lambda x: 2*(1-1/(1+tf.nn.relu(x+1)**k))-1
+    elif args.envelop_form == 'linear':
+        args.envelop_fn = lambda x: x
+    elif args.envelop_form == 'clip linear':
+        args.envelop_fn = lambda x: tf.clip_by_value(x, clip_value_min=-1, clip_value_max=1)
     else:
         raise Exception("Illegal envelop function. Choose from [tanh, polynomial/hill]")
     return args.envelop_fn

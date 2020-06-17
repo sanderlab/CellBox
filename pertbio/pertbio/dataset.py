@@ -6,7 +6,6 @@ from scipy import sparse
 
 
 def factory(cfg):
-
     # Prepare data
     if cfg.sparse_data:
         cfg.pert_in = tf.compat.v1.sparse.placeholder(tf.float32, [None, cfg.n_x], name='pert_in')
@@ -22,10 +21,17 @@ def factory(cfg):
     # add noise
     if hasattr(cfg, "add_noise") and cfg.add_noise:
         try:
-            assert cfg.sparse_data
+            assert not cfg.sparse_data
         except Exception:
-            "Adding noise to sparse data format is yet to be supported"
-        cfg.expr = cfg.expr + np.random.normal(loc=0., scale=cfg.add_noise_level)
+            raise Exception("Adding noise to sparse data format is yet to be supported")
+        scramble = cfg.expr.values.flatten()
+        np.random.shuffle(scramble)
+        scramble = scramble.reshape(cfg.expr.shape)
+        try:
+            assert 0 <= cfg.add_noise_level <= 1
+        except Exception:
+            raise Exception("Invalid noise level. Choose from [0,1]")
+        cfg.expr.iloc[:] = (1 - cfg.add_noise_level) * cfg.expr.values + cfg.add_noise_level * scramble
 
     # prepare training placeholders
     cfg.l1_lambda_placeholder = tf.compat.v1.placeholder(tf.float32, name='l1_lambda')
@@ -58,7 +64,7 @@ def factory(cfg):
 
     # Prepare feed_dicts
     cfg.feed_dicts = {
-        'train_set' : {
+        'train_set': {
             cfg.pert_in: cfg.dataset['pert_train'],
             cfg.expr_out: cfg.dataset['expr_train'],
         },
@@ -66,7 +72,7 @@ def factory(cfg):
             cfg.pert_in: cfg.dataset['pert_valid'],
             cfg.expr_out: cfg.dataset['expr_valid'],
         },
-        'test_set':{
+        'test_set': {
             cfg.pert_in: cfg.dataset['pert_test'],
             cfg.expr_out: cfg.dataset['expr_test']
         }
@@ -137,7 +143,6 @@ def loo(cfg, singles):
 
 
 def random_partition(cfg):
-
     nexp, n_x = cfg.pert.shape
     nvalid = int(nexp * cfg.trainset_ratio)
     ntrain = int(nvalid * cfg.validset_ratio)

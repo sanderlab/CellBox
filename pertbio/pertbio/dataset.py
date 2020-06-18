@@ -19,19 +19,13 @@ def factory(cfg):
         cfg.expr = pd.read_csv(os.path.join(cfg.root_dir, cfg.expr_file), header=None, dtype=np.float32)
 
     # add noise
-    if hasattr(cfg, "add_noise") and cfg.add_noise:
+    if hasattr(cfg, "add_noise_level") and cfg.add_noise_level > 0:
+        np.random.seed(cfg.seed)
         try:
             assert not cfg.sparse_data
         except Exception:
             raise Exception("Adding noise to sparse data format is yet to be supported")
-        scramble = cfg.expr.values.flatten()
-        np.random.shuffle(scramble)
-        scramble = scramble.reshape(cfg.expr.shape)
-        try:
-            assert 0 <= cfg.add_noise_level <= 1
-        except Exception:
-            raise Exception("Invalid noise level. Choose from [0,1]")
-        cfg.expr.iloc[:] = (1 - cfg.add_noise_level) * cfg.expr.values + cfg.add_noise_level * scramble
+        cfg.expr.iloc[:] = cfg.expr.values + np.random.normal(loc=0, scale=cfg.add_noise_level, size=cfg.expr.shape)
 
     # prepare training placeholders
     cfg.l1_lambda_placeholder = tf.compat.v1.placeholder(tf.float32, name='l1_lambda')

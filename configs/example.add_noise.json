@@ -14,7 +14,6 @@
   "trainset_ratio": 0.7,
   "validset_ratio": 0.8,
   "batchsize": 4,
-  "add_noise": true,
   "add_noise_level": 0,
   "envelop_form": "hill",
   "dT": 0.1,

@@ -8,7 +8,7 @@ import shutil
 parser = argparse.ArgumentParser(description='CellBox grid search dispatcher')
 parser.add_argument('--grid_config_path', required=True, type=str, help="Path of grid search config")
 parser.add_argument('--meta_config_path', required=True, type=str, help="Path of meta search config")
-parser.add_argument('--duplicates', default=10, type=int, help='how many experiments for each patch')
+parser.add_argument('--no_submission', action='store_true', help='whether to submit jobs to O2')
 args = parser.parse_args()
 
 grid = json.load(open(args.grid_config_path, 'r'))
@@ -40,6 +40,7 @@ for modifier, barcode in zip(modifiers, barcodes):
     json.dump(job, open(job_cfg_path, 'w'), indent=4, sort_keys=True)
     # for i in range(args.duplicates):
     #     print('python scripts/main.py --experiment_config_path={} --working_index={}'.format(job_cfg_path, i))
-    os.system("sbatch {} {}".format(bash_file, job_cfg_path))
+    if not args.no_submission:
+        os.system("sbatch {} {}".format(bash_file, job_cfg_path))
 
 

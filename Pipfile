@@ -6,6 +6,9 @@ name = "pypi"
 [dev-packages]
 
 [packages]
+tensorflow = '==1.15.0'
+numpy = '==1.16.0'
+pandas = '==0.24.2'
 
 [requires]
 python_version = "3.6"

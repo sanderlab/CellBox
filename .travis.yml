@@ -12,4 +12,4 @@ install:
   
 script:
   - cd ..; python scripts/main.py -config=configs/example.cfg.json
-  - pylint pertbio
+  - cd pertbio; pylint pertbio

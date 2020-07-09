@@ -5,6 +5,7 @@ python:
 
 install:
   - pip install --upgrade pip
+  - pip install setuptools --upgrade
   - pip install pylint
   - pip install -r requirements.txt
   - cd pertbio; python setup.py install

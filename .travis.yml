@@ -12,4 +12,4 @@ install:
   
 script:
   - cd ..; python scripts/main.py -config=configs/example.cfg.json
-  - cd pertbio; pylint pertbio
+  - cd pertbio; pylint --disable=line-too-long,invalid-name pertbio

@@ -5,8 +5,9 @@ python:
 
 install:
   - pip install pipenv
-  - python pertbio/setup.py install
+  - cd pertbio; python setup.py install
   
 script:
+  - cd ..
   - pylint pertbio
   - python scripts/main.py -config=configs/example.cfg.json

@@ -6,6 +6,7 @@ python:
 install:
   - pip install pipenv
   - pipenv install --dev
+  - pipenv install '-e pertbio'
   
 script:
   - pylint pertbio

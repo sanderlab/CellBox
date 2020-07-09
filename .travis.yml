@@ -1,0 +1,12 @@
+language: python
+
+python:
+  - "3.6"
+
+install:
+  - pip install pipenv
+  - pipenv install --dev
+  
+script:
+  - pylint pertbio
+  - pipenv run python scripts/main.py

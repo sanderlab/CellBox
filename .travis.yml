@@ -5,13 +5,8 @@ python:
 
 install:
   - pip install --upgrade pip
+  - pip install -r requirements.txt
   - cd pertbio; python setup.py install
-  
-before_script:
-  - pip install tensorflow==1.15.0
-  - pip install pipenv
-  - pipenv install
-  - cd pertbio; pipenv run python setup.py install
   
 script:
   - cd ..

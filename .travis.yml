@@ -11,5 +11,5 @@ install:
   - cd pertbio; python setup.py install
   
 script:
-  - python scripts/main.py -config=configs/example.cfg.json
+  - cd ..; python scripts/main.py -config=configs/example.cfg.json
   - pylint pertbio

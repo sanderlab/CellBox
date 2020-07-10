@@ -12,5 +12,6 @@ install:
   - cd pertbio; python setup.py install
   
 script:
+  - python -m pytest test.py
   - cd pertbio; pylint --disable=line-too-long,invalid-name,too-many-arguments,too-many-locals,too-few-public-methods,broad-except,too-many-instance-attributes,too-many-function-args pertbio
-  - python -m pytest test.py > console.log
+  

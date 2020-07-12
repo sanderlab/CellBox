@@ -67,9 +67,9 @@ def get_ode_solver(args):
 def heun_solver(x, t_mu, dT, n_T, _dXdt):
     xs = [tf.tile(x, [1, tf.shape(t_mu)[1]])]
     for i in range(n_T):
-        dXdt_current = _dXdt(x, t_mu)
-        dXdt_next = _dXdt(x + dT * dXdt_current, t_mu)
-        x = x + dT * 0.5 * (dXdt_current + dXdt_next)
+        dxdt_current = _dXdt(x, t_mu)
+        dxdt_next = _dXdt(x + dT * dxdt_current, t_mu)
+        x = x + dT * 0.5 * (dxdt_current + dxdt_next)
         xs.append(x)
     xs = tf.stack(xs, axis=0)
     return xs
@@ -78,8 +78,8 @@ def heun_solver(x, t_mu, dT, n_T, _dXdt):
 def euler_solver(x, t_mu, dT, n_T, _dXdt):
     xs = [tf.tile(x, [1, tf.shape(t_mu)[1]])]
     for i in range(n_T):
-        dXdt_current = _dXdt(x, t_mu)
-        x = x + dT * dXdt_current
+        dxdt_current = _dXdt(x, t_mu)
+        x = x + dT * dxdt_current
         xs.append(x)
     xs = tf.stack(xs, axis=0)
     return xs
@@ -88,9 +88,9 @@ def euler_solver(x, t_mu, dT, n_T, _dXdt):
 def midpoint_solver(x, t_mu, dT, n_T, _dXdt):
     xs = [tf.tile(x, [1, tf.shape(t_mu)[1]])]
     for i in range(n_T):
-        dXdt_current = _dXdt(x, t_mu)
-        dXdt_midpoint = _dXdt(x + 0.5 * dT * dXdt_current, t_mu)
-        x = x + dT * dXdt_midpoint
+        dxdt_current = _dXdt(x, t_mu)
+        dxdt_midpoint = _dXdt(x + 0.5 * dT * dxdt_current, t_mu)
+        x = x + dT * dxdt_midpoint
         xs.append(x)
     xs = tf.stack(xs, axis=0)
     return xs

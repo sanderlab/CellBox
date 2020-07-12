@@ -1,12 +1,12 @@
 import os
+import glob
+import time
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-import glob
+from tensorflow.errors import OutOfRangeError
 import pertbio
 from pertbio.utils import TimeLogger
-import time
-from tensorflow.errors import OutOfRangeError
 
 
 def train_substage(model, sess, lr_val, l1_lambda, l2_lambda, n_epoch, n_iter, n_iter_buffer, n_iter_patience, args):
@@ -63,11 +63,10 @@ def train_substage(model, sess, lr_val, l1_lambda, l2_lambda, n_epoch, n_iter, n
                 (model.monitor_loss, model.monitor_mse_loss), feed_dict=args.feed_dicts['valid_set'])
             new_loss = best_params.avg_n_iters_loss(loss_valid_i)
             if args.export_verbose >= 3:
-                print(("Epoch:{}/{}\tIteration: {}/{}" +
-                      "\tloss (train):{}\tloss (buffer on valid):{}\tbest:{}\tTolerance: {}/{}").format(
-                        idx_epoch, n_epoch, idx_iter, n_iter,
-                        loss_train_i, new_loss, best_params.loss_min, n_unchanged, n_iter_patience
-                ))
+                print(("Epoch:{}/{}\tIteration: {}/{}" + "\tloss (train):{}\tloss (buffer on valid):{}" +
+                       "\tbest:{}\tTolerance: {}/{}").format(idx_epoch, n_epoch, idx_iter, n_iter, loss_train_i,
+                                                             new_loss, best_params.loss_min, n_unchanged,
+                                                             n_iter_patience))
             append_record("record_eval.csv",
                           [idx_epoch, idx_iter, loss_train_i, loss_valid_i, loss_train_mse_i,
                            loss_valid_mse_i, None, time.clock() - t0])
@@ -115,8 +114,7 @@ def eval_model(sess, eval_iter, obj_fn, eval_dict, return_avg=True):
             break
     if return_avg:
         return np.mean(np.array(eval_results), axis=0)
-    else:
-        return np.vstack(eval_results)
+    return np.vstack(eval_results)
 
 
 def train_model(model, args):
@@ -144,7 +142,7 @@ def train_model(model, args):
         print('Create new model at {}...'.format(args.ckpt_name))
 
     # Training
-    for substage_i, substage in enumerate(args.sub_stages):
+    for substage in args.sub_stages:
         n_iter_buffer = substage['n_iter_buffer'] if 'n_iter_buffer' in substage else args.n_iter_buffer
         n_iter = substage['n_iter'] if 'n_iter' in substage else args.n_iter
         n_iter_patience = substage['n_iter_patience'] if 'n_iter_patience' in substage else args.n_iter_patience

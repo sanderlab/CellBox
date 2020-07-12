@@ -1,6 +1,6 @@
 import numpy as np
-import pertbio.kernel
 import tensorflow as tf
+import pertbio.kernel
 from pertbio.utils import loss, optimize
 # import tensorflow_probability as tfp
 
@@ -8,13 +8,13 @@ from pertbio.utils import loss, optimize
 def factory(args):
     if args.model == 'CellBox':
         return CellBox(args).build()
-    elif args.model == 'CoExp':
+    if args.model == 'CoExp':
         return CoExp(args).build()
-    elif args.model == 'CoExp_nonlinear':
+    if args.model == 'CoExp_nonlinear':
         return CoExpNonlinear(args).build()
-    elif args.model == 'LinReg':
+    if args.model == 'LinReg':
         return LinReg(args).build()
-    elif args.model == 'NN':
+    if args.model == 'NN':
         return NN(args).build()
     # elif args.model == 'Bayesian':
     #     return BN(args).build()
@@ -105,11 +105,10 @@ class CoExp(PertBio):
             xhats = tf.map_fn(fn=self._forward_1, elems=x_gold)
             xhats_avg = tf.reduce_mean(xhats, axis=1)
             return xhats_avg
-        else:
-            self.pos = tf.constant(self.pos_full)
-            xhats_selected = tf.map_fn(fn=lambda elem: self._forward_2(elem[0], elem[1]), elems=(idx, self.x_gold),
+        self.pos = tf.constant(self.pos_full)
+        xhats_selected = tf.map_fn(fn=lambda elem: self._forward_2(elem[0], elem[1]), elems=(idx, self.x_gold),
                                        dtype=tf.float32)
-            return xhats_selected
+        return xhats_selected
 
     def get_ops(self):
         self.l1_lambda = tf.compat.v1.placeholder(tf.float32, shape=[])

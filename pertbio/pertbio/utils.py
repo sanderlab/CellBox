@@ -1,7 +1,6 @@
-import tensorflow as tf
-import numpy as np
 import time
 import hashlib
+import tensorflow as tf
 
 
 def loss(x_gold, x_hat, W, l1=0, l2=0):

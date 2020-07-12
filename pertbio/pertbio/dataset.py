@@ -1,7 +1,7 @@
+import os
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-import os
 from scipy import sparse
 
 
@@ -141,7 +141,7 @@ def random_partition(cfg):
     nvalid = int(nexp * cfg.trainset_ratio)
     ntrain = int(nvalid * cfg.validset_ratio)
     try:
-        random_pos = np.genfromtxt('random_pos.csv', fmt='%d')
+        random_pos = np.genfromtxt('random_pos.csv', defaultfmt='%d')
     except Exception:
         random_pos = np.random.choice(range(nexp), nexp, replace=False)
         np.savetxt('random_pos.csv', random_pos, fmt='%d')

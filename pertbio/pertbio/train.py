@@ -130,7 +130,7 @@ def train_model(model, args):
 
     # Initialization
     args.saver = tf.compat.v1.train.Saver()
-    from tf.core.protobuf import rewriter_config_pb2
+    from tensorflow.core.protobuf import rewriter_config_pb2
     config = tf.compat.v1.ConfigProto()
     off = rewriter_config_pb2.RewriterConfig.OFF
     config.graph_options.rewrite_options.memory_optimization = off

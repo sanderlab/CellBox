@@ -136,7 +136,7 @@ class CoExp(PertBio):
         self.params = {}
         self.get_variables()
         self.xhat_training = self.forward(self.train_x, pos=self.pos_full, training=True)
-        self.xhat = self.forward(self.train_x, idx=self.idx, training=False)
+        self.xhat = self.forward(self.train_x, idx=self.pos_full, training=False)
         self.get_ops()
         return self
 

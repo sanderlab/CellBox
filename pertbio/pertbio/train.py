@@ -4,7 +4,7 @@ import time
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from tensorflow.errors import OutOfRangeError
+from tensorflow.compat.v1.errors import OutOfRangeError
 import pertbio
 from pertbio.utils import TimeLogger
 
@@ -184,7 +184,7 @@ def simu_model(config_path, working_index, mu):
 
         mu = np.float32(mu)
         if args.model == 'CellBox':
-            convergence, xhat = sess.run(model.forward(mu))
+            _, xhat = sess.run(model.forward(mu))
         else:
             xhat = sess.run(model.forward(mu))
     except Exception:

@@ -48,8 +48,7 @@ def get_dxdt(args, params):
         # epsilon*phi(Sigma)+psi*u-alpha*x
         return lambda x, t_mu: params['eps'] * args.envelop_fn(weighted_sum(x)) + params['psi'] * t_mu - \
                                params['alpha'] * x
-    else:
-        raise Exception("Illegal envelop type. Choose from [0,1,2].")
+    raise Exception("Illegal envelop type. Choose from [0,1,2].")
 
 
 def get_ode_solver(args):
@@ -62,8 +61,7 @@ def get_ode_solver(args):
         return rk4_solver
     if args.ode_solver == 'midpoint':
         return midpoint_solver
-    else:
-        raise Exception("Illegal ODE solver. Use [heun, euler, rk4, midpoint]")
+    raise Exception("Illegal ODE solver. Use [heun, euler, rk4, midpoint]")
 
 
 def heun_solver(x, t_mu, dT, n_T, _dXdt):

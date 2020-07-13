@@ -227,7 +227,7 @@ class Screenshot(dict):
         return sum(self.saved_losses) / len(self.saved_losses)
 
     def screenshot(self, sess, model, substage_i, node_index, loss_min, args):
-    """evaluate models"""
+        """evaluate models"""
         self.substage_i = substage_i
         self.loss_min = loss_min
         # Save the variables to disk.
@@ -267,7 +267,7 @@ class Screenshot(dict):
                 pass
 
     def save(self):
-    """save model parameters"""
+        """save model parameters"""
         for file in glob.glob(str(self.substage_i) + "_best.*.csv"):
             os.remove(file)
         for key in self:

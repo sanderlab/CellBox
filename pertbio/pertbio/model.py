@@ -41,6 +41,7 @@ class PertBio:
         self.lr = self.args.lr
 
     def get_ops(self):
+        """get operators for tensorflow"""
         self.train_loss, self.train_mse_loss = loss(self.train_y, self.train_yhat,
                                                     self.params['W'], self.l1_lambda, self.l2_lambda)
         self.monitor_loss, self.monitor_mse_loss = loss(self.monitor_y, self.monitor_yhat,
@@ -49,7 +50,16 @@ class PertBio:
                                                   self.params['W'], self.l1_lambda, self.l2_lambda)
         self.op_optimize = optimize(self.train_loss, self.lr)
 
+    def get_variables(self):
+        """get model parameters (overwritten by model configuration)"""
+        raise NotImplementedError
+
+    def forward(self):
+        """forward propagation (overwritten by model configuration)"""
+        raise NotImplementedError
+
     def build(self):
+        """build model"""
         self.params = {}
         self.get_variables()
         self.train_yhat = self.forward(self.train_x)
@@ -110,14 +120,14 @@ class CoExp(PertBio):
             xhats_avg = tf.reduce_mean(xhats, axis=1)
             return xhats_avg
         self.pos = tf.constant(self.pos_full)
-        xhats_selected = tf.map_fn(fn=lambda elem: self._forward_2(elem[0], elem[1]), elems=(idx, self.x_gold),
+        xhats_selected = tf.map_fn(fn=lambda elem: self._forward_2(elem[0], elem[1]), elems=(idx, x_gold),
                                    dtype=tf.float32)
         return xhats_selected
 
     def get_ops(self):
         self.l1_lambda = tf.compat.v1.placeholder(tf.float32, shape=[])
-        self.loss_mse = tf.reduce_mean(tf.square((self.x_gold - self.xhat)))
-        self.loss_mse_training = tf.reduce_mean(tf.square((self.x_gold - self.xhat_training)))
+        self.loss_mse = tf.reduce_mean(tf.square((self.train_x - self.xhat)))
+        self.loss_mse_training = tf.reduce_mean(tf.square((self.train_x - self.xhat_training)))
         self.loss = self.loss_mse_training + self.l1_lambda * tf.reduce_mean(tf.abs(self.params['Ws']))
         self.lr = tf.compat.v1.placeholder(tf.float32)
         self.op_optimize = optimize(self.loss, self.lr, var_list=None)
@@ -125,8 +135,8 @@ class CoExp(PertBio):
     def build(self):
         self.params = {}
         self.get_variables()
-        self.xhat_training = self.forward(self.x_gold, pos=self.pos_full, training=True)
-        self.xhat = self.forward(self.x_gold, idx=self.idx, training=False)
+        self.xhat_training = self.forward(self.train_x, pos=self.pos_full, training=True)
+        self.xhat = self.forward(self.train_x, idx=self.idx, training=False)
         self.get_ops()
         return self
 

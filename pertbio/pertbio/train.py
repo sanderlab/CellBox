@@ -4,7 +4,7 @@ import time
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from tf.errors import OutOfRangeError
+from tensorflow.errors import OutOfRangeError
 import pertbio
 from pertbio.utils import TimeLogger
 

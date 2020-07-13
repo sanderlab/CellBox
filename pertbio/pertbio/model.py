@@ -1,6 +1,6 @@
 """
 This module defines the structures for different models, including
-CellBox, linear regression, and co-expression
+CellBox, linear regression, Neural network, and co-expression
 """
 
 import numpy as np
@@ -183,6 +183,7 @@ class LinReg(PertBio):
 
 
 class NN(LinReg):
+    """Neural network model"""
     def get_variables(self):
         with tf.compat.v1.variable_scope("initialization", reuse=True):
             self.params.update({

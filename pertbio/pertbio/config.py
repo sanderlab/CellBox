@@ -1,3 +1,7 @@
+"""
+This module defines the reader for the configuration file
+"""
+
 import json
 
 

@@ -1,3 +1,9 @@
+"""
+This module defines the data partitioning for different training schemes,
+including single-to-combo (s2c), leave-one-drug-out cross-validations (loo),
+and random partition of the dataset.
+"""
+
 import os
 import numpy as np
 import pandas as pd
@@ -181,6 +187,7 @@ def random_partition(cfg):
 
 
 def npz_to_feedable_arrays(npz):
+    """convert sparse matrix to arrays"""
     coo = npz.tocoo()
     indices = [[i, j] for i, j in zip(coo.row, coo.col)]
     values = coo.data

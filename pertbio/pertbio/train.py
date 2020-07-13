@@ -1,3 +1,7 @@
+"""
+This module defines the training of the model
+"""
+
 import os
 import glob
 import time
@@ -213,6 +217,7 @@ class Screenshot(dict):
         # initialize verbose
         self.summary = {}
         self.summary = {}
+        self.substage_i = []
         try:
             self.export_verbose = args.export_verbose
             # 0: no output, 1: params only, 2: params + prediction, 3: output for each iteration

@@ -1,3 +1,8 @@
+"""
+This module defines the ODE formulations, including the choices of ODE solvers,
+degree of ODEs, and the envelope forms
+"""
+
 import tensorflow as tf
 
 

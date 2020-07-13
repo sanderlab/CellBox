@@ -1,3 +1,8 @@
+"""
+This module defines the structures for different models, including
+CellBox, linear regression, and co-expression
+"""
+
 import numpy as np
 import tensorflow as tf
 import pertbio.kernel
@@ -20,11 +25,9 @@ def factory(args):
     # elif args.model == 'Bayesian':
     #     return BN(args).build()
     # TODO: baysian model
-
-    else:
-        raise Exception("Illegal model name. Choose from [{}]".format(
-            'CellBox, CoExp, LinReg, NN, CoExp_nonlinear, Bayesian'
-        ))
+    raise Exception("Illegal model name. Choose from [{}]".format(
+        'CellBox, CoExp, LinReg, NN, CoExp_nonlinear, Bayesian'
+    ))
 
 
 class PertBio:
@@ -142,7 +145,7 @@ class CoExp(PertBio):
 
 
 class CoExpNonlinear(CoExp):
-
+    """co-expression model with non-linear envelope"""
     def get_variables(self):
         with tf.compat.v1.variable_scope("initialization", reuse=True):
             Ws = tf.Variable(np.zeros([self.args.n_x, self.args.n_x, self.n_x, self.n_x]), dtype=tf.float32)
@@ -166,6 +169,7 @@ class CoExpNonlinear(CoExp):
 
 
 class LinReg(PertBio):
+    """linear regression model"""
     def get_variables(self):
         with tf.compat.v1.variable_scope("initialization", reuse=True):
             self.params.update({

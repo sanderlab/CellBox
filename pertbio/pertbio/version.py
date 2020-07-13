@@ -1,3 +1,7 @@
+"""
+This module defines the version of the package
+"""
+
 __version__ = '0.1.1'
 VERSION = __version__
 

@@ -1,3 +1,8 @@
+"""
+This module defines utility functions during training, including the loss function,
+the optimizer, the timer, and the md5 key for each configuration
+"""
+
 import time
 import hashlib
 import tensorflow as tf

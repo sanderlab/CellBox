@@ -3,6 +3,7 @@ VERSION = __version__
 
 
 def get_msg():
+    """get version history"""
     # for test: installation completed
     changelog = """
         version 0.0.2

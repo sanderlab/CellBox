@@ -6,6 +6,7 @@ from pertbio.utils import loss, optimize
 
 
 def factory(args):
+    """define model type based on argument"""
     if args.model == 'CellBox':
         return CellBox(args).build()
     if args.model == 'CoExp':
@@ -27,6 +28,7 @@ def factory(args):
 
 
 class PertBio:
+    """define basic model"""
     def __init__(self, args):
         self.args = args
         self.n_x = args.n_x
@@ -58,12 +60,14 @@ class PertBio:
 
 
 def get_idx_pair(mu):
+    """get perturbation position"""
     idx = np.where(mu != 0)[0]
     idx = [idx[0], idx[-1]]
     return idx
 
 
 class CoExp(PertBio):
+    """Co-expression model"""
     def __init__(self, args):
         # TODO: redesign CoExp class
         super(CoExp, self).__init__(args)
@@ -107,7 +111,7 @@ class CoExp(PertBio):
             return xhats_avg
         self.pos = tf.constant(self.pos_full)
         xhats_selected = tf.map_fn(fn=lambda elem: self._forward_2(elem[0], elem[1]), elems=(idx, self.x_gold),
-                                       dtype=tf.float32)
+                                   dtype=tf.float32)
         return xhats_selected
 
     def get_ops(self):
@@ -183,7 +187,7 @@ class NN(LinReg):
 
 
 class CellBox(PertBio):
-
+    """CellBox model"""
     def build(self):
         self.params = {}
         self.get_variables()

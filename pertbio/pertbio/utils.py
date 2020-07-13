@@ -4,7 +4,7 @@ import tensorflow as tf
 
 
 def loss(x_gold, x_hat, W, l1=0, l2=0):
-
+    """evaluate loss"""
     if isinstance(x_gold, tf.SparseTensor):
         x_gold = tf.sparse.to_dense(x_gold)
 
@@ -38,6 +38,7 @@ def optimize(loss_in, lr, optimizer=tf.compat.v1.train.AdamOptimizer, var_list=N
 
 
 class TimeLogger:
+    """calculate training time"""
     def __init__(self, time_logger_step=1, hierachy=1):
         self.time_logger_step = time_logger_step
         self.step_count = 0
@@ -45,6 +46,7 @@ class TimeLogger:
         self.time = time.time()
 
     def log(self, s):
+        """time log"""
         if self.step_count % self.time_logger_step == 0:
             print("#" * 4 * self.hierachy, " ", s, "  --time elapsed: %.2f" % (time.time() - self.time))
             self.time = time.time()

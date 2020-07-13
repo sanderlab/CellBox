@@ -6,6 +6,7 @@ from scipy import sparse
 
 
 def factory(cfg):
+    """formulate training dataset"""
     # Prepare data
     if cfg.sparse_data:
         cfg.pert_in = tf.compat.v1.sparse.placeholder(tf.float32, [None, cfg.n_x], name='pert_in')
@@ -75,10 +76,11 @@ def factory(cfg):
 
 
 def s2c(cfg):
+    """single-to-combo trials"""
     double_idx = cfg.loo.all(axis=1)
     testidx = double_idx
 
-    nexp, n_x = cfg.pert.shape
+    nexp, _ = cfg.pert.shape
     nvalid = nexp - sum(testidx)
     ntrain = int(nvalid * cfg.validset_ratio)
 
@@ -105,6 +107,7 @@ def s2c(cfg):
 
 
 def loo(cfg, singles):
+    """leave-one-drug-out trials"""
     drug_index = int(cfg.drug_index)
     double_idx = cfg.loo.all(axis=1)
 
@@ -114,7 +117,7 @@ def loo(cfg, singles):
         testidx = pd.concat([testidx, double_idx], axis=1)
         testidx = testidx.all(axis=1)
 
-    nexp, n_x = cfg.pert.shape
+    nexp, _ = cfg.pert.shape
     nvalid = nexp - sum(testidx)
     ntrain = int(nvalid * cfg.validset_ratio)
 
@@ -137,7 +140,8 @@ def loo(cfg, singles):
 
 
 def random_partition(cfg):
-    nexp, n_x = cfg.pert.shape
+    """random partition of data"""
+    nexp, _ = cfg.pert.shape
     nvalid = int(nexp * cfg.trainset_ratio)
     ntrain = int(nvalid * cfg.validset_ratio)
     try:

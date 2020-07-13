@@ -2,6 +2,7 @@ import json
 
 
 class Config(object):
+    """read in config file"""
     def __init__(self, config_file):
 
         with open(config_file, 'r') as f:

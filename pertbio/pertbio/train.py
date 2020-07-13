@@ -4,7 +4,7 @@ import time
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from tensorflow.errors import OutOfRangeError
+from tf.errors import OutOfRangeError
 import pertbio
 from pertbio.utils import TimeLogger
 
@@ -98,6 +98,7 @@ def train_substage(model, sess, lr_val, l1_lambda, l2_lambda, n_epoch, n_iter, n
 
 
 def append_record(filename, contents):
+    """define function for appending training record"""
     with open(filename, 'a') as f:
         for content in contents:
             f.write('{},'.format(content))
@@ -105,6 +106,7 @@ def append_record(filename, contents):
 
 
 def eval_model(sess, eval_iter, obj_fn, eval_dict, return_avg=True):
+    """simulate the model for prediction"""
     sess.run(eval_iter.initializer, feed_dict=eval_dict)
     eval_results = []
     while True:
@@ -118,6 +120,7 @@ def eval_model(sess, eval_iter, obj_fn, eval_dict, return_avg=True):
 
 
 def train_model(model, args):
+    """Train the model"""
     args.logger = TimeLogger(time_logger_step=1, hierachy=2)
 
     # Check if all variables in scope
@@ -127,7 +130,7 @@ def train_model(model, args):
 
     # Initialization
     args.saver = tf.compat.v1.train.Saver()
-    from tensorflow.core.protobuf import rewriter_config_pb2
+    from tf.core.protobuf import rewriter_config_pb2
     config = tf.compat.v1.ConfigProto()
     off = rewriter_config_pb2.RewriterConfig.OFF
     config.graph_options.rewrite_options.memory_optimization = off
@@ -158,6 +161,7 @@ def train_model(model, args):
 
 
 def simu_model(config_path, working_index, mu):
+    """Simulate the model"""
     cfg = pertbio.config.Config(config_path)
     cfg.ckpt_path_full = os.path.join('./', cfg.ckpt_name)
     md5 = pertbio.utils.md5(str(vars(cfg)))
@@ -191,13 +195,14 @@ def simu_model(config_path, working_index, mu):
 
 
 def save_model(saver, sess, path):
+    """save model"""
     # Save the variables to disk.
     tmp = saver.save(sess, path)
     print("Model saved in path: %s" % tmp)
 
 
 class Screenshot(dict):
-
+    """summarize the model"""
     def __init__(self, args, n_iter_buffer):
         # initialize loss_min
         super().__init__()
@@ -216,12 +221,13 @@ class Screenshot(dict):
             self.export_verbose = 2  # default verbose: 2
 
     def avg_n_iters_loss(self, new_loss):
+        """average the last few losses"""
         self.saved_losses = self.saved_losses + [new_loss]
         self.saved_losses = self.saved_losses[-self.n_iter_buffer:]
         return sum(self.saved_losses) / len(self.saved_losses)
 
     def screenshot(self, sess, model, substage_i, node_index, loss_min, args):
-
+    """evaluate models"""
         self.substage_i = substage_i
         self.loss_min = loss_min
         # Save the variables to disk.
@@ -261,6 +267,7 @@ class Screenshot(dict):
                 pass
 
     def save(self):
+    """save model parameters"""
         for file in glob.glob(str(self.substage_i) + "_best.*.csv"):
             os.remove(file)
         for key in self:

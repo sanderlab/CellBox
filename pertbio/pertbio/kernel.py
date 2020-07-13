@@ -2,6 +2,7 @@ import tensorflow as tf
 
 
 def get_envelop(args):
+    """get the envelope form based on the given argument"""
     if args.envelop_form == 'tanh':
         args.envelop_fn = tf.tanh
     elif args.envelop_form == 'polynomial':
@@ -25,7 +26,7 @@ def get_envelop(args):
 
 
 def get_dxdt(args, params):
-
+    """calculate the derivatives dx/dt in the ODEs"""
     if args.ode_degree == 1:
         def weighted_sum(x):
             return tf.matmul(params['W'], x)
@@ -40,10 +41,10 @@ def get_dxdt(args, params):
     if args.envelop == 0:
         # epsilon*phi(Sigma+u)-alpha*x
         return lambda x, t_mu: params['eps'] * args.envelop_fn(weighted_sum(x) + t_mu) - params['alpha'] * x
-    elif args.envelop == 1:
+    if args.envelop == 1:
         # epsilon*[phi(Sigma)+u]-alpha*x
         return lambda x, t_mu: params['eps'] * (args.envelop_fn(weighted_sum(x)) + t_mu) - params['alpha'] * x
-    elif args.envelop == 2:
+    if args.envelop == 2:
         # epsilon*phi(Sigma)+psi*u-alpha*x
         return lambda x, t_mu: params['eps'] * args.envelop_fn(weighted_sum(x)) + params['psi'] * t_mu - \
                                params['alpha'] * x
@@ -52,21 +53,23 @@ def get_dxdt(args, params):
 
 
 def get_ode_solver(args):
+    """get the ODE solver based on the given argument"""
     if args.ode_solver == 'heun':
         return heun_solver
-    elif args.ode_solver == 'euler':
+    if args.ode_solver == 'euler':
         return euler_solver
-    elif args.ode_solver == 'rk4':
+    if args.ode_solver == 'rk4':
         return rk4_solver
-    elif args.ode_solver == 'midpoint':
+    if args.ode_solver == 'midpoint':
         return midpoint_solver
     else:
         raise Exception("Illegal ODE solver. Use [heun, euler, rk4, midpoint]")
 
 
 def heun_solver(x, t_mu, dT, n_T, _dXdt):
+    """Heun's ODE solver"""
     xs = [tf.tile(x, [1, tf.shape(t_mu)[1]])]
-    for i in range(n_T):
+    for _ in range(n_T):
         dxdt_current = _dXdt(x, t_mu)
         dxdt_next = _dXdt(x + dT * dxdt_current, t_mu)
         x = x + dT * 0.5 * (dxdt_current + dxdt_next)
@@ -76,8 +79,9 @@ def heun_solver(x, t_mu, dT, n_T, _dXdt):
 
 
 def euler_solver(x, t_mu, dT, n_T, _dXdt):
+    """Euler's method"""
     xs = [tf.tile(x, [1, tf.shape(t_mu)[1]])]
-    for i in range(n_T):
+    for _ in range(n_T):
         dxdt_current = _dXdt(x, t_mu)
         x = x + dT * dxdt_current
         xs.append(x)
@@ -86,8 +90,9 @@ def euler_solver(x, t_mu, dT, n_T, _dXdt):
 
 
 def midpoint_solver(x, t_mu, dT, n_T, _dXdt):
+    """Midpoint method"""
     xs = [tf.tile(x, [1, tf.shape(t_mu)[1]])]
-    for i in range(n_T):
+    for _ in range(n_T):
         dxdt_current = _dXdt(x, t_mu)
         dxdt_midpoint = _dXdt(x + 0.5 * dT * dxdt_current, t_mu)
         x = x + dT * dxdt_midpoint
@@ -97,8 +102,9 @@ def midpoint_solver(x, t_mu, dT, n_T, _dXdt):
 
 
 def rk4_solver(x, t_mu, dT, n_T, _dXdt):
+    """Runge-Kutta method"""
     xs = [tf.tile(x, [1, tf.shape(t_mu)[1]])]
-    for i in range(n_T):
+    for _ in range(n_T):
         k1 = _dXdt(x, t_mu)
         k2 = _dXdt(x + 0.5*dT*k1, t_mu)
         k3 = _dXdt(x + 0.5*dT*k2, t_mu)

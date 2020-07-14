@@ -1,15 +1,15 @@
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dfci/CellBox/version_for_initial_manuscript)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dfci/CellBox/version_for_revision)
 
 # Quick Start
 
 Easily try PertBio online with Binder 
 
-1. Go to: https://mybinder.org/v2/gh/dfci/CellBox/version_for_initial_manuscript
+1. Go to: https://mybinder.org/v2/gh/dfci/CellBox/version_for_revision
 2. From the New dropdown, click Terminal 
 3. Run the following command for a short example of model training process: 
 
 ```
-python scripts/main.py -config=configs/example.cfg.json
+python scripts/main.py -config=configs/debugger.cellbox.json
 ```
 
 Alternatively, in project folder, do the same command
@@ -20,7 +20,7 @@ Alternatively, in project folder, do the same command
 The following command will install pertbio from a particular branch using the '@' notation:
 
 ```
-pip install git+https://github.com/dfci/CellBox.git@version_for_initial_manuscript#egg=pertbio\&subdirectory=pertbio
+pip install git+https://github.com/dfci/CellBox.git@version_for_revision#egg=pertbio\&subdirectory=pertbio
 ```
 
 ## Install using setup.py

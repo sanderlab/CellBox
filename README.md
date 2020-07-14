@@ -1,4 +1,4 @@
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dfci/CellBox/version_for_revision)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dfci/CellBox/version_for_revision) [![Build Status](https://travis-ci.org/dfci/CellBox.svg?branch=master)](https://travis-ci.org/dfci/CellBox)
 
 # Quick Start
 

@@ -44,7 +44,7 @@ def factory(cfg):
     cfg.iter_train = tf.compat.v1.data.make_initializable_iterator(
         dataset.batch(cfg.batchsize).shuffle(buffer_size=1024, reshuffle_each_iteration=True))
     cfg.iter_monitor = tf.compat.v1.data.make_initializable_iterator(
-        dataset.repeat().batch(cfg.batchsize).shuffle(buffer_size=1024, reshuffle_each_iteration=True))
+        dataset.repeat().shuffle(buffer_size=1024, reshuffle_each_iteration=True)).batch(cfg.batchsize)
     cfg.iter_eval = tf.compat.v1.data.make_initializable_iterator(dataset.batch(cfg.batchsize))
 
     # Data partition

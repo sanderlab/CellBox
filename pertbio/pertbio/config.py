@@ -20,5 +20,5 @@ class Config(object):
         self.model_prefix = config_dict['model_prefix']
         self.stages = config_dict['stages']
         self.model = config_dict['model']
-
+        self.max_iter = config_dict['max_iter'] if "max_iter" in config_dict else None
         self.__dict__.update(config_dict)

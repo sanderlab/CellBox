@@ -12,6 +12,7 @@
   "trainset_ratio": 0.7,
   "validset_ratio": 0.8,
   "batchsize": 32,
+  "max_iter": 64,
 
   "envelop_form": "tanh",
   "dT": 0.1,

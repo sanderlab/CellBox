@@ -87,13 +87,14 @@ def train_substage(model, sess, lr_val, l1_lambda, l2_lambda, n_epoch, n_iter, n
     t0 = time.clock()
     sess.run(model.iter_eval.initializer, feed_dict=args.feed_dicts['valid_set'])
     loss_valid_i, loss_valid_mse_i = eval_model(sess, model.iter_eval, (model.eval_loss, model.eval_mse_loss),
-                                                args.feed_dicts['valid_set'])
+                                                args.feed_dicts['valid_set'], max_iter=args.max_iter)
     append_record("record_eval.csv", [-1, None, None, loss_valid_i, None, loss_valid_mse_i, None, time.clock() - t0])
 
     # Evaluation on test set
     t0 = time.clock()
     sess.run(model.iter_eval.initializer, feed_dict=args.feed_dicts['test_set'])
-    loss_test_mse = eval_model(sess, model.iter_eval, model.eval_mse_loss, args.feed_dicts['test_set'])
+    loss_test_mse = eval_model(sess, model.iter_eval, model.eval_mse_loss,
+                               args.feed_dicts['test_set'], max_iter=args.max_iter)
     append_record("record_eval.csv", [-1, None, None, None, None, None, loss_test_mse, time.clock() - t0])
 
     best_params.save()
@@ -109,14 +110,18 @@ def append_record(filename, contents):
         f.write('\n')
 
 
-def eval_model(sess, eval_iter, obj_fn, eval_dict, return_avg=True):
+def eval_model(sess, eval_iter, obj_fn, eval_dict, return_avg=True, max_iter=None):
     """simulate the model for prediction"""
     sess.run(eval_iter.initializer, feed_dict=eval_dict)
+    counter = 0
     eval_results = []
     while True:
         try:
             eval_results.append(sess.run(obj_fn, feed_dict=eval_dict))
         except OutOfRangeError:
+            break
+        counter += 1
+        if max_iter is not None and counter > max_iter:
             break
     if return_avg:
         return np.mean(np.array(eval_results), axis=0)

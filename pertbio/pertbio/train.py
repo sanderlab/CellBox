@@ -66,7 +66,7 @@ def train_substage(model, sess, lr_val, l1_lambda, l2_lambda, n_epoch, n_iter, n
             loss_valid_i, loss_valid_mse_i = sess.run(
                 (model.monitor_loss, model.monitor_mse_loss), feed_dict=args.feed_dicts['valid_set'])
             new_loss = best_params.avg_n_iters_loss(loss_valid_i)
-            if args.export_verbose >= 3:
+            if args.export_verbose > 0:
                 print(("Epoch:{}/{}\tIteration: {}/{}" + "\tloss (train):{}\tloss (buffer on valid):{}" +
                        "\tbest:{}\tTolerance: {}/{}").format(idx_epoch, n_epoch, idx_iter, n_iter, loss_train_i,
                                                              new_loss, best_params.loss_min, n_unchanged,

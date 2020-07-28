@@ -42,7 +42,7 @@ def factory(cfg):
     # Prepare dataset iterators
     dataset = tf.data.Dataset.from_tensor_slices((cfg.pert_in, cfg.expr_out))
     cfg.iter_train = tf.compat.v1.data.make_initializable_iterator(
-        dataset.batch(cfg.batchsize).shuffle(buffer_size=1024, reshuffle_each_iteration=True))
+        dataset.shuffle(buffer_size=1024, reshuffle_each_iteration=True).batch(cfg.batchsize))
     cfg.iter_monitor = tf.compat.v1.data.make_initializable_iterator(
         dataset.repeat().shuffle(buffer_size=1024, reshuffle_each_iteration=True).batch(cfg.batchsize))
     cfg.iter_eval = tf.compat.v1.data.make_initializable_iterator(dataset.batch(cfg.batchsize))

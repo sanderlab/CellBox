@@ -51,6 +51,10 @@ def train_substage(model, sess, lr_val, l1_lambda, l2_lambda, n_epoch, n_iter, n
 
     sess.run(model.iter_monitor.initializer, feed_dict=args.feed_dicts['valid_set'])
     for idx_epoch in range(n_epoch):
+
+        if idx_iter > n_iter or n_unchanged > n_iter_patience:
+            break
+
         sess.run(model.iter_train.initializer, feed_dict=args.feed_dicts['train_set'])
         while True:
             if idx_iter > n_iter or n_unchanged > n_iter_patience:

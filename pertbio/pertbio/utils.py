@@ -14,7 +14,7 @@ def loss(x_gold, x_hat, W, l1=0, l2=0, weight=1):
         x_gold = tf.sparse.to_dense(x_gold)
 
     with tf.compat.v1.variable_scope("loss", reuse=True):
-        loss_mse = tf.reduce_mean(tf.square(x_gold - x_hat) * weight)
+        loss_mse = tf.reduce_mean(tf.square(x_gold - x_hat) * tf.abs(weight))
         l1_loss = l1 * tf.reduce_sum(tf.abs(W))
         l2_loss = l2 * tf.reduce_sum(tf.square(tf.abs(W)))
         loss_full = loss_mse + l1_loss + l2_loss

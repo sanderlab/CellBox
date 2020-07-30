@@ -45,12 +45,22 @@ class PertBio:
 
     def get_ops(self):
         """get operators for tensorflow"""
-        self.train_loss, self.train_mse_loss = loss(self.train_y, self.train_yhat,
-                                                    self.params['W'], self.l1_lambda, self.l2_lambda)
-        self.monitor_loss, self.monitor_mse_loss = loss(self.monitor_y, self.monitor_yhat,
-                                                        self.params['W'], self.l1_lambda, self.l2_lambda)
-        self.eval_loss, self.eval_mse_loss = loss(self.eval_y, self.eval_yhat,
-                                                  self.params['W'], self.l1_lambda, self.l2_lambda)
+        if self.args.weight_loss == 'expr':
+            self.train_loss, self.train_mse_loss = loss(self.train_y, self.train_yhat, self.params['W'],
+                                                        self.l1_lambda, self.l2_lambda, weight=self.train_y)
+            self.monitor_loss, self.monitor_mse_loss = loss(self.monitor_y, self.monitor_yhat, self.params['W'],
+                                                            self.l1_lambda, self.l2_lambda, weight=self.monitor_y)
+            self.eval_loss, self.eval_mse_loss = loss(self.eval_y, self.eval_yhat, self.params['W'],
+                                                      self.l1_lambda, self.l2_lambda, weight=self.eval_y)
+        elif self.args.weight_loss == 'None':
+            self.train_loss, self.train_mse_loss = loss(self.train_y, self.train_yhat, self.params['W'],
+                                                        self.l1_lambda, self.l2_lambda)
+            self.monitor_loss, self.monitor_mse_loss = loss(self.monitor_y, self.monitor_yhat, self.params['W'],
+                                                            self.l1_lambda, self.l2_lambda)
+            self.eval_loss, self.eval_mse_loss = loss(self.eval_y, self.eval_yhat, self.params['W'],
+                                                    self.l1_lambda, self.l2_lambda)
+        else:
+            raise Exception("Invalid input for weight_loss flag. Choose from ['expr', 'None']")
         self.op_optimize = optimize(self.train_loss, self.lr)
 
     def get_variables(self):

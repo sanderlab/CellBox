@@ -23,6 +23,7 @@
   "ode_last_steps": 2,
   "l1lambda": 1e-4,
   "l2lambda": 1e-4,
+  "weight_loss": "expr",
 
   "n_epoch": 10000,
   "n_iter": 10000,

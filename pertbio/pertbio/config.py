@@ -21,4 +21,5 @@ class Config(object):
         self.stages = config_dict['stages']
         self.model = config_dict['model']
         self.max_iter = config_dict['max_iter'] if "max_iter" in config_dict else None
+        self.weight_loss = config_dict['weight_loss'] if 'weight_loss' in config_dict else 'None'
         self.__dict__.update(config_dict)

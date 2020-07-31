@@ -8,7 +8,7 @@ import hashlib
 import tensorflow as tf
 
 
-def loss(x_gold, x_hat, W, l1=0, l2=0, weight=1):
+def loss(x_gold, x_hat, W, l1=0, l2=0, weight=1.):
     """evaluate loss"""
     if isinstance(x_gold, tf.SparseTensor):
         x_gold = tf.sparse.to_dense(x_gold)

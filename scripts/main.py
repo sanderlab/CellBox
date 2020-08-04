@@ -5,6 +5,8 @@ import pandas as pd
 import tensorflow as tf
 import shutil
 import argparse
+import json
+
 
 parser = argparse.ArgumentParser(description='CellBox main script')
 parser.add_argument('-config', '--experiment_config_path', required=True, type=str, help="Path of experiment config")
@@ -33,8 +35,10 @@ def prepare_workdir(in_cfg):
         os.makedirs(experiment_path)
     except Exception:
         pass
-
+    out_cfg = vars(in_cfg)
+    out_cfg = {key: out_cfg[key] for key in out_cfg if type(out_cfg[key]) is not pd.DataFrame}
     os.chdir(experiment_path)
+    json.dump(out_cfg, open('config.json', 'w'), indent=4)
 
     if "leave one out" in in_cfg.experiment_type:
         try:

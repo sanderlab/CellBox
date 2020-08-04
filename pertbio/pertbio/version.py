@@ -79,6 +79,18 @@ def get_msg():
         * Add support to L2 loss (alone or together with L1, i.e. elastic net)
         * Clean the example configs folder
 
+        version 0.3.0
+        -- June 8, 2020 --
+        Add support for alternative form of perturbation
+        * Previous: add u on activity nodes
+        * New: fix activity nodes directly
+            - 1) changing the x_0 from zeros to u
+            - 2) adding mask on dxdt
+            - 3) the previous format should work fine due to numpy broadcast
+            - 4) Note the incompatibility between the new graph and old ckpt files  
+        * Minor improvement
+            - Revised printing log
+            - Rename model checkpoint name (as the original ckpt cannot be loaded for the new graph)
         """
 
     print(changelog)

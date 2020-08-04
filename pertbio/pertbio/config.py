@@ -14,7 +14,7 @@ class Config(object):
 
         self.experiment_type = "random partition" if "experiment_type" not in config_dict else None
         self.experiment_id = "Debugging" if "experiment_id" not in config_dict else None
-        self.experiment_id = "model12.ckpt" if "ckpt_name" not in config_dict else None
+        self.experiment_id = "model11.ckpt" if "ckpt_name" not in config_dict else None
 
         self.ckpt_name = config_dict['ckpt_name']
         self.model_prefix = config_dict['model_prefix']

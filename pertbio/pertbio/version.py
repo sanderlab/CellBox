@@ -87,10 +87,7 @@ def get_msg():
             - 1) changing the x_0 from zeros to u
             - 2) adding mask on dxdt
             - 3) the previous format should work fine due to numpy broadcast
-            - 4) Note the incompatibility between the new graph and old ckpt files  
-        * Minor improvement
-            - Revised printing log
-            - Rename model checkpoint name (as the original ckpt cannot be loaded for the new graph)
+        * Revised printing log
         """
 
     print(changelog)

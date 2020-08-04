@@ -43,6 +43,6 @@
     ]}],
 
     "export_verbose": 3,
-    "model_prefix": "b12",
-    "ckpt_name": "model12.ckpt"
+    "model_prefix": "b11",
+    "ckpt_name": "model11.ckpt"
 }

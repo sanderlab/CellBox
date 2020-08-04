@@ -12,6 +12,7 @@
   "trainset_ratio": 0.7,
   "validset_ratio": 0.8,
   "batchsize": 8,
+  "pert_form": "fix x",
 
   "envelop_form": "hill",
   "dT": 0.1,

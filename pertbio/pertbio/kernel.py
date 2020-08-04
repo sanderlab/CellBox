@@ -69,13 +69,16 @@ def get_ode_solver(args):
     raise Exception("Illegal ODE solver. Use [heun, euler, rk4, midpoint]")
 
 
-def heun_solver(x, t_mu, dT, n_T, _dXdt):
+def heun_solver(x, t_mu, dT, n_T, _dXdt, n_activity_nodes=None):
     """Heun's ODE solver"""
-    xs = [tf.tile(x, [1, tf.shape(t_mu)[1]])]
+    xs = []
+    n_x = t_mu.shape[0]
+    n_activity_nodes = n_x if n_activity_nodes is None else n_activity_nodes
+    dxdt_mask = tf.pad(tf.ones((n_activity_nodes, 1)), [[0, n_x - n_activity_nodes], [0, 0]])
     for _ in range(n_T):
         dxdt_current = _dXdt(x, t_mu)
         dxdt_next = _dXdt(x + dT * dxdt_current, t_mu)
-        x = x + dT * 0.5 * (dxdt_current + dxdt_next)
+        x = x + dT * 0.5 * (dxdt_current + dxdt_next) * dxdt_mask
         xs.append(x)
     xs = tf.stack(xs, axis=0)
     return xs
@@ -83,7 +86,7 @@ def heun_solver(x, t_mu, dT, n_T, _dXdt):
 
 def euler_solver(x, t_mu, dT, n_T, _dXdt):
     """Euler's method"""
-    xs = [tf.tile(x, [1, tf.shape(t_mu)[1]])]
+    xs = []
     for _ in range(n_T):
         dxdt_current = _dXdt(x, t_mu)
         x = x + dT * dxdt_current
@@ -94,7 +97,7 @@ def euler_solver(x, t_mu, dT, n_T, _dXdt):
 
 def midpoint_solver(x, t_mu, dT, n_T, _dXdt):
     """Midpoint method"""
-    xs = [tf.tile(x, [1, tf.shape(t_mu)[1]])]
+    xs = []
     for _ in range(n_T):
         dxdt_current = _dXdt(x, t_mu)
         dxdt_midpoint = _dXdt(x + 0.5 * dT * dxdt_current, t_mu)
@@ -106,7 +109,7 @@ def midpoint_solver(x, t_mu, dT, n_T, _dXdt):
 
 def rk4_solver(x, t_mu, dT, n_T, _dXdt):
     """Runge-Kutta method"""
-    xs = [tf.tile(x, [1, tf.shape(t_mu)[1]])]
+    xs = []
     for _ in range(n_T):
         k1 = _dXdt(x, t_mu)
         k2 = _dXdt(x + 0.5*dT*k1, t_mu)

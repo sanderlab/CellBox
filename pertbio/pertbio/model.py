@@ -216,33 +216,34 @@ class CellBox(PertBio):
     def build(self):
         self.params = {}
         self.get_variables()
-        self.x_0 = tf.constant(np.zeros((self.n_x, 1)), name="x_init", dtype=tf.float32)
+        if self.args.pert_form == 'by u':
+            y0 = tf.constant(np.zeros((self.n_x, 1)), name="x_init", dtype=tf.float32)
+            self.train_y0 = y0
+            self.monitor_y0 = y0
+            self.eval_y0 = y0
+            self.gradient_zero_from = None
+        elif self.args.pert_form == 'fix x':  # fix level of node x (here y) by input perturbation u (here x)
+            self.train_y0 = tf.transpose(self.train_x)
+            self.monitor_y0 = tf.transpose(self.monitor_x)
+            self.eval_y0 = tf.transpose(self.eval_x)
+            self.gradient_zero_from = self.args.n_activity_nodes
+        else:
+            raise Exception("Illegal pert_form in the config file. Choose from ['by u', 'fix x'].")
         self.envelop_fn = pertbio.kernel.get_envelop(self.args)
         self.ode_solver = pertbio.kernel.get_ode_solver(self.args)
         self._dxdt = pertbio.kernel.get_dxdt(self.args, self.params)
-        self.convergence_metric_train, self.train_yhat = self.forward(self.train_x)
-        self.convergence_metric_monitor, self.monitor_yhat = self.forward(self.monitor_x)
-        self.convergence_metric_eval, self.eval_yhat = self.forward(self.eval_x)
+        self.convergence_metric_train, self.train_yhat = self.forward(self.train_y0, self.train_x)
+        self.convergence_metric_monitor, self.monitor_yhat = self.forward(self.monitor_y0, self.monitor_x)
+        self.convergence_metric_eval, self.eval_yhat = self.forward(self.eval_y0, self.eval_x)
         self.get_ops()
         return self
 
-    def _simu(self, t_mu):
-        t_mu = tf.reshape(t_mu, [self.n_x, 1])
-        xs = self.ode_solver(self.x_0, t_mu, self.args.dT, self.args.n_T, self._dxdt, self.args)
-        tail_iters = self.args.ode_last_steps
-
-        xs = tf.reshape(xs, [-1, self.n_x])[-tail_iters:]
-        mean, sd = tf.nn.moments(xs, axes=0)
-        dxdt = tf.reshape(
-            self._dxdt(tf.reshape(xs[-1], [-1, 1]), t_mu), [-1])
-        return tf.reshape(xs[-1], [self.n_x]), tf.concat([mean, sd, dxdt], axis=0)
-
-    def forward(self, mu):
+    def forward(self, x0, mu):
         if isinstance(mu, tf.SparseTensor):
             mu_t = tf.sparse.to_dense(tf.sparse.transpose(mu))
         else:
             mu_t = tf.transpose(mu)
-        xs = self.ode_solver(self.x_0, mu_t, self.args.dT, self.args.n_T, self._dxdt)
+        xs = self.ode_solver(x0, mu_t, self.args.dT, self.args.n_T, self._dxdt, self.gradient_zero_from)
         # [n_T, n_x, batch_size]
         xs = xs[-self.args.ode_last_steps:]
         # [n_iter_tail, n_x, batch_size]

@@ -84,38 +84,47 @@ def heun_solver(x, t_mu, dT, n_T, _dXdt, n_activity_nodes=None):
     return xs
 
 
-def euler_solver(x, t_mu, dT, n_T, _dXdt):
+def euler_solver(x, t_mu, dT, n_T, _dXdt, n_activity_nodes=None):
     """Euler's method"""
     xs = []
+    n_x = t_mu.shape[0]
+    n_activity_nodes = n_x if n_activity_nodes is None else n_activity_nodes
+    dxdt_mask = tf.pad(tf.ones((n_activity_nodes, 1)), [[0, n_x - n_activity_nodes], [0, 0]])
     for _ in range(n_T):
         dxdt_current = _dXdt(x, t_mu)
-        x = x + dT * dxdt_current
+        x = x + dT * dxdt_current * dxdt_mask
         xs.append(x)
     xs = tf.stack(xs, axis=0)
     return xs
 
 
-def midpoint_solver(x, t_mu, dT, n_T, _dXdt):
+def midpoint_solver(x, t_mu, dT, n_T, _dXdt, n_activity_nodes=None):
     """Midpoint method"""
     xs = []
+    n_x = t_mu.shape[0]
+    n_activity_nodes = n_x if n_activity_nodes is None else n_activity_nodes
+    dxdt_mask = tf.pad(tf.ones((n_activity_nodes, 1)), [[0, n_x - n_activity_nodes], [0, 0]])
     for _ in range(n_T):
         dxdt_current = _dXdt(x, t_mu)
         dxdt_midpoint = _dXdt(x + 0.5 * dT * dxdt_current, t_mu)
-        x = x + dT * dxdt_midpoint
+        x = x + dT * dxdt_midpoint * dxdt_mask
         xs.append(x)
     xs = tf.stack(xs, axis=0)
     return xs
 
 
-def rk4_solver(x, t_mu, dT, n_T, _dXdt):
+def rk4_solver(x, t_mu, dT, n_T, _dXdt, n_activity_nodes=None):
     """Runge-Kutta method"""
     xs = []
+    n_x = t_mu.shape[0]
+    n_activity_nodes = n_x if n_activity_nodes is None else n_activity_nodes
+    dxdt_mask = tf.pad(tf.ones((n_activity_nodes, 1)), [[0, n_x - n_activity_nodes], [0, 0]])
     for _ in range(n_T):
         k1 = _dXdt(x, t_mu)
         k2 = _dXdt(x + 0.5*dT*k1, t_mu)
         k3 = _dXdt(x + 0.5*dT*k2, t_mu)
         k4 = _dXdt(x + dT*k3, t_mu)
-        x = x + dT * (1/6*k1+1/3*k2+1/3*k3+1/6*k4)
+        x = x + dT * (1/6*k1+1/3*k2+1/3*k3+1/6*k4) * dxdt_mask
         xs.append(x)
     xs = tf.stack(xs, axis=0)
     return xs

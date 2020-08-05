@@ -91,21 +91,32 @@ def s2c(cfg):
     ntrain = int(nvalid * cfg.validset_ratio)
 
     valid_pos = np.random.choice(range(nvalid), nvalid, replace=False)
-    pert_train = cfg.pert[~testidx]
-    train_data = cfg.expr[~testidx]
     dataset = {
         "node_index": cfg.node_index,
-        "pert_train": pert_train.iloc[valid_pos[:ntrain], :].values,
-        "pert_valid": pert_train.iloc[valid_pos[ntrain:], :].values,
-        "pert_test": cfg.pert[testidx],
         "pert_full": cfg.pert,
-        "train_data": train_data.iloc[valid_pos[:ntrain], :].values,
-        "valid_data": train_data.iloc[valid_pos[ntrain:], :].values,
-        "test_data": cfg.expr[testidx],
-        "train_pos": valid_pos[:ntrain].values,
-        "valid_pos": valid_pos[ntrain:].values,
+        "train_pos": valid_pos[:ntrain],
+        "valid_pos": valid_pos[ntrain:],
         "test_pos": testidx
     }
+
+    if cfg.sparse_data:
+        dataset.update({
+            "pert_train": npz_to_feedable_arrays(cfg.pert[~testidx][valid_pos[:ntrain]]),
+            "pert_valid": npz_to_feedable_arrays(cfg.pert[~testidx][valid_pos[ntrain:]]),
+            "pert_test": npz_to_feedable_arrays(cfg.pert[testidx]),
+            "expr_train": npz_to_feedable_arrays(cfg.expr[~testidx][valid_pos[:ntrain]]),
+            "expr_valid": npz_to_feedable_arrays(cfg.expr[~testidx][valid_pos[ntrain:]]),
+            "expr_test": npz_to_feedable_arrays(cfg.expr[testidx])
+        })
+    else:
+        dataset.update({
+            "pert_train": cfg.pert[~testidx].iloc[valid_pos[:ntrain], :].values,
+            "pert_valid": cfg.pert[~testidx].iloc[valid_pos[ntrain:], :].values,
+            "pert_test": cfg.pert[testidx],
+            "expr_train": cfg.expr[~testidx].iloc[valid_pos[:ntrain], :].values,
+            "expr_valid": cfg.expr[~testidx].iloc[valid_pos[ntrain:], :].values,
+            "expr_test": cfg.expr[testidx]
+        })
 
     # TODO: class Dataset of Sample instances
 
@@ -128,19 +139,32 @@ def loo(cfg, singles):
     ntrain = int(nvalid * cfg.validset_ratio)
 
     valid_pos = np.random.choice(range(nvalid), nvalid, replace=False)
-    pert_train = cfg.pert[~testidx]
-    train_data = cfg.expr[~testidx]
-
     dataset = {
         "node_index": cfg.node_index,
-        "pert_train": pert_train.iloc[valid_pos[:ntrain], :],
-        "pert_valid": pert_train.iloc[valid_pos[ntrain:], :],
-        "pert_test": cfg.pert[testidx],
         "pert_full": cfg.pert,
-        "train_data": train_data.iloc[valid_pos[:ntrain], :],
-        "valid_data": train_data.iloc[valid_pos[ntrain:], :],
-        "test_data": cfg.expr[testidx]
+        "train_pos": valid_pos[:ntrain],
+        "valid_pos": valid_pos[ntrain:],
+        "test_pos": testidx
     }
+
+    if cfg.sparse_data:
+        dataset.update({
+            "pert_train": npz_to_feedable_arrays(cfg.pert[~testidx][valid_pos[:ntrain]]),
+            "pert_valid": npz_to_feedable_arrays(cfg.pert[~testidx][valid_pos[ntrain:]]),
+            "pert_test": npz_to_feedable_arrays(cfg.pert[testidx]),
+            "expr_train": npz_to_feedable_arrays(cfg.expr[~testidx][valid_pos[:ntrain]]),
+            "expr_valid": npz_to_feedable_arrays(cfg.expr[~testidx][valid_pos[ntrain:]]),
+            "expr_test": npz_to_feedable_arrays(cfg.expr[testidx])
+        })
+    else:
+        dataset.update({
+            "pert_train": cfg.pert[~testidx].iloc[valid_pos[:ntrain], :].values,
+            "pert_valid": cfg.pert[~testidx].iloc[valid_pos[ntrain:], :].values,
+            "pert_test": cfg.pert[testidx],
+            "expr_train": cfg.expr[~testidx].iloc[valid_pos[:ntrain], :].values,
+            "expr_valid": cfg.expr[~testidx].iloc[valid_pos[ntrain:], :].values,
+            "expr_test": cfg.expr[testidx]
+        })
 
     return dataset
 

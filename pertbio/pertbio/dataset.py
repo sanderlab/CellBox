@@ -34,18 +34,7 @@ def factory(cfg):
             raise Exception("Adding noise to sparse data format is yet to be supported")
         cfg.expr.iloc[:] = cfg.expr.values + np.random.normal(loc=0, scale=cfg.add_noise_level, size=cfg.expr.shape)
 
-    # prepare training placeholders
-    cfg.l1_lambda_placeholder = tf.compat.v1.placeholder(tf.float32, name='l1_lambda')
-    cfg.l2_lambda_placeholder = tf.compat.v1.placeholder(tf.float32, name='l2_lambda')
-    cfg.lr = tf.compat.v1.placeholder(tf.float32, name='lr')
-
-    # Prepare dataset iterators
-    dataset = tf.data.Dataset.from_tensor_slices((cfg.pert_in, cfg.expr_out))
-    cfg.iter_train = tf.compat.v1.data.make_initializable_iterator(
-        dataset.shuffle(buffer_size=1024, reshuffle_each_iteration=True).batch(cfg.batchsize))
-    cfg.iter_monitor = tf.compat.v1.data.make_initializable_iterator(
-        dataset.repeat().shuffle(buffer_size=1024, reshuffle_each_iteration=True).batch(cfg.batchsize))
-    cfg.iter_eval = tf.compat.v1.data.make_initializable_iterator(dataset.batch(cfg.batchsize))
+    cfg = get_tensors(cfg)
 
     # Data partition
     if cfg.experiment_type == 'random partition' or cfg.experiment_type == 'full data':
@@ -80,6 +69,21 @@ def factory(cfg):
     }
     return cfg
 
+
+def get_tensors(cfg):
+    # prepare training placeholders
+    cfg.l1_lambda_placeholder = tf.compat.v1.placeholder(tf.float32, name='l1_lambda')
+    cfg.l2_lambda_placeholder = tf.compat.v1.placeholder(tf.float32, name='l2_lambda')
+    cfg.lr = tf.compat.v1.placeholder(tf.float32, name='lr')
+
+    # Prepare dataset iterators
+    dataset = tf.data.Dataset.from_tensor_slices((cfg.pert_in, cfg.expr_out))
+    cfg.iter_train = tf.compat.v1.data.make_initializable_iterator(
+        dataset.shuffle(buffer_size=1024, reshuffle_each_iteration=True).batch(cfg.batchsize))
+    cfg.iter_monitor = tf.compat.v1.data.make_initializable_iterator(
+        dataset.repeat().shuffle(buffer_size=1024, reshuffle_each_iteration=True).batch(cfg.batchsize))
+    cfg.iter_eval = tf.compat.v1.data.make_initializable_iterator(dataset.batch(cfg.batchsize))
+    return cfg
 
 def s2c(cfg):
     """single-to-combo trials"""

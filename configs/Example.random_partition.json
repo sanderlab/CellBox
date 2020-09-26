@@ -1,5 +1,5 @@
 {
-  "experiment_id": "Example",
+  "experiment_id": "Example_RP",
   "experiment_type": "random partition",
   "model": "CellBox",
   "sparse_data": false,

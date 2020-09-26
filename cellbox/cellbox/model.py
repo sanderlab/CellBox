@@ -74,7 +74,7 @@ class PertBio:
         self.get_variables()
         self.train_yhat = self.forward(self.train_y0, self.train_x)
         self.monitor_yhat = self.forward(self.monitor_y0, self.monitor_x)
-        self.eval_yhat = self.forward(self.eval_x)
+        self.eval_yhat = self.forward(self.eval_y0, self.train_x)
         self.get_ops()
         return self
 
@@ -170,7 +170,7 @@ class LinReg(PertBio):
                 'b': tf.Variable(np.random.normal(0.01, size=(self.n_x, 1)), name="b", dtype=tf.float32)
             })
 
-    def forward(self, mu):
+    def forward(self, x, mu):
         xhat = tf.matmul(mu, self.params['W']) + tf.reshape(self.params['b'], [1, -1])
         return xhat
 
@@ -188,7 +188,7 @@ class NN(LinReg):
                 'b': tf.Variable(np.random.normal(0.01, size=(self.n_x, 1)), name="bo", dtype=tf.float32)
             })
 
-    def forward(self, mu):
+    def forward(self, x, mu):
         hidden = tf.tanh(tf.matmul(mu, self.params['W_h']) + tf.reshape(self.params['b_h'], [1, -1]))
         xhat = tf.matmul(hidden, self.params['W']) + tf.reshape(self.params['b'], [1, -1])
         return xhat
@@ -290,5 +290,3 @@ class CoExpNonlinear(CoExp):
     # hidden_masked = tf.gather_nd(hidden_transposed, tf.compat.v2.where(tf.eye(tf.shape(mu)[0])))
     # xhat = tf.matmul(tf.tanh(hidden_masked), self.params['W']) + tf.reshape(self.params['b'], [1, -1])
     # return xhat
-
-

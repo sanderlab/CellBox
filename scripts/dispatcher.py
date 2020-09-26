@@ -29,7 +29,7 @@ modifiers = [{}]
 barcodes = ['']
 for key in grid:
     modifiers = [append(job, {key: val}) for job in modifiers for val in grid[key]]
-    barcodes = [barcode + '_{}'.format(i)  for barcode in barcodes for i, _ in enumerate(grid[key])]
+    barcodes = [barcode + '_{}'.format(i) for barcode in barcodes for i, _ in enumerate(grid[key])]
 
 wdr = os.path.join(os.path.dirname(args.meta_config_path), 'grid_search')
 bash_file = os.path.join(os.path.dirname(args.meta_config_path), 'run.sh')
@@ -46,4 +46,3 @@ for modifier, barcode in zip(modifiers, barcodes):
         os.system("sbatch {} {}".format(bash_file, job_cfg_path))
     else:
         print("sbatch {} {}".format(bash_file, job_cfg_path))
-

@@ -63,7 +63,7 @@ def train_substage(model, sess, lr_val, l1_lambda, l2_lambda, n_epoch, n_iter, n
             try:
                 _, loss_train_i, loss_train_mse_i = sess.run(
                     (model.op_optimize, model.train_loss, model.train_mse_loss), feed_dict=args.feed_dicts['train_set'])
-            except OutOfRangeError: # for iter_train
+            except OutOfRangeError:  # for iter_train
                 break
 
             # record training

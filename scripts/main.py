@@ -10,7 +10,6 @@ import shutil
 import argparse
 import json
 
-
 parser = argparse.ArgumentParser(description='CellBox main script')
 parser.add_argument('-config', '--experiment_config_path', required=True, type=str, help="Path of experiment config")
 parser.add_argument('-i', '--working_index', default=0, type=int)
@@ -80,6 +79,7 @@ if __name__ == '__main__':
     logger = pertbio.utils.TimeLogger(time_logger_step=1, hierachy=3)
     args = cfg
     for i, stage in enumerate(cfg.stages):
+        set_seed(cfg.seed)
         cfg = pertbio.dataset.factory(cfg)
         logger.log("Training on stage {}/{} ...".format(i + 1, len(cfg.stages)))
         args.sub_stages = stage['sub_stages']

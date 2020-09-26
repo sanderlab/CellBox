@@ -1,3 +1,6 @@
+"""
+This is the grid search script which would dispatch multiple jobs
+"""
 import json
 import argparse
 import pdb

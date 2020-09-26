@@ -11,27 +11,26 @@ from pertbio.utils import loss, optimize
 
 
 def factory(args):
-    """define model type based on argument"""
+    """define model type based on configuration input"""
     if args.model == 'CellBox':
         return CellBox(args).build()
-    if args.model == 'CoExp':
-        return CoExp(args).build()
-    if args.model == 'CoExp_nonlinear':
-        return CoExpNonlinear(args).build()
+    # Deprecated for now, use scikit-learn instead
+    # TODO: update the co-expression models
+    # if args.model == 'CoExp':
+    #     return CoExp(args).build()
+    # if args.model == 'CoExp_nonlinear':
+    #     return CoExpNonlinear(args).build()
     if args.model == 'LinReg':
         return LinReg(args).build()
     if args.model == 'NN':
         return NN(args).build()
-    # elif args.model == 'Bayesian':
-    #     return BN(args).build()
     # TODO: baysian model
-    raise Exception("Illegal model name. Choose from [{}]".format(
-        'CellBox, CoExp, LinReg, NN, CoExp_nonlinear, Bayesian'
-    ))
+    # if args.model == 'Bayesian':
+    #     return BN(args).build()
 
 
 class PertBio:
-    """define basic model"""
+    """define abstract perturbation model"""
     def __init__(self, args):
         self.args = args
         self.n_x = args.n_x
@@ -58,16 +57,14 @@ class PertBio:
             self.monitor_loss, self.monitor_mse_loss = loss(self.monitor_y, self.monitor_yhat, self.params['W'],
                                                             self.l1_lambda, self.l2_lambda)
             self.eval_loss, self.eval_mse_loss = loss(self.eval_y, self.eval_yhat, self.params['W'],
-                                                    self.l1_lambda, self.l2_lambda)
-        else:
-            raise Exception("Invalid input for weight_loss flag. Choose from ['expr', 'None']")
+                                                      self.l1_lambda, self.l2_lambda)
         self.op_optimize = optimize(self.train_loss, self.lr)
 
     def get_variables(self):
         """get model parameters (overwritten by model configuration)"""
         raise NotImplementedError
 
-    def forward(self):
+    def forward(self, x, mu):
         """forward propagation (overwritten by model configuration)"""
         raise NotImplementedError
 
@@ -75,8 +72,8 @@ class PertBio:
         """build model"""
         self.params = {}
         self.get_variables()
-        self.train_yhat = self.forward(self.train_x)
-        self.monitor_yhat = self.forward(self.monitor_x)
+        self.train_yhat = self.forward(self.train_y0, self.train_x)
+        self.monitor_yhat = self.forward(self.monitor_y0, self.monitor_x)
         self.eval_yhat = self.forward(self.eval_x)
         self.get_ops()
         return self
@@ -206,6 +203,8 @@ def get_idx_pair(mu):
 
 class CoExp(PertBio):
     """Co-expression model"""
+    # currently deprecated, use scikit-learn to construct co-exp models until the further updates
+
     def __init__(self, args):
         # TODO: redesign CoExp class
         super(CoExp, self).__init__(args)
@@ -271,6 +270,7 @@ class CoExp(PertBio):
 
 class CoExpNonlinear(CoExp):
     """co-expression model with non-linear envelope"""
+    # currently deprecated, use scikit-learn to construct co-exp models until the further updates
     def get_variables(self):
         with tf.compat.v1.variable_scope("initialization", reuse=True):
             Ws = tf.Variable(np.zeros([self.args.n_x, self.args.n_x, self.n_x, self.n_x]), dtype=tf.float32)
@@ -279,7 +279,6 @@ class CoExpNonlinear(CoExp):
             b = tf.Variable(np.zeros([self.n_x, 1]), dtype=tf.float32)
         self.params.update({'Ws': Ws, 'bs': bs, 'W': W, 'b': b})
 
-    # TODO: fix after redesign CoExp class
     # def forward(self, mu):
     # # during training, use mu_full, while during testing use mu
     # idx = tf.map_fn(fn=get_idx_pair, elems=mu, dtype=tf.int32)

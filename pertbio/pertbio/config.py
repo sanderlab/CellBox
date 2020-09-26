@@ -6,7 +6,66 @@ import json
 
 
 class Config(object):
-    """read in config file"""
+    """
+    An object reading in a json file of model configuration
+
+    ### Output files
+    experiment_id (str): A string that used for result folder export (default: "Debugging"). The full
+                         output path would be "./results/$experiment_id$_$an_md5_identifier$/$model_prefic$_$seed$/"
+    model_prefix (str): A name for each sub-experiment with a specific random seed, default: 'seed', The full
+                         output path would be "./results/$experiment_id$_$an_md5_identifier$/$model_prefic$_$seed$/"
+    ckpt_name (str): A name for tensorflow checkpoint files (default: "model.ckpt").
+    model (str): the type of model. Currently supported input: ["CellBox", "NN", "LinReg"].
+    export_verbose (int): export verbose, supported [0: no output, 1: params only, 2: params + prediction (default),
+                                                     3: output for each iteration]
+
+    ### Input files
+    pert_file (str): file path to the perturbation matrix.
+    expr_file (str): file path to the cell response matrix.
+    sparse_data (bool): whether to use sparse matrix (scipy.sparse) as input data, default: False.
+    n_x (int) : Number of nodes in the interaction network.
+                The nodes should be ordered in protein nodes -> activity nodes -> phenotypic nodes
+    n_protein_nodes (int): idx of the last protein nodes in the interaction network
+    n_activity_nodes (int): idx of the last activity nodes in the interaction network
+    experiment_type (str): A string that describes the experiment type and data partition.
+                           Supported input: ["random partition"(default), "leave one out (w/o single)",
+                                             "leave one out (w/ single)", "single to combo"].
+    trainset_ratio (float): The data partition ratio between (train + valid) : test. (Default: 0.7)
+    validset_ratio (float): The data partition ratio between train : valid. (Default: 0.8)
+    batchsize (int): The batch size for each iteration. (Default: 8)
+    n_batches_eval (int): Maximum number of batches for model evaluation (use when the validation/test dataset is large)
+    add_noise_level (float): the sigma of Gaussian noise added onto expr data file during training, default: 0.
+
+    ### Details for the ODE kernel (See kernel.py for more details)
+    envelope_form (str): the nonlinear envelope function in a string format, supported: ["tanh" (default), "polynomial"]
+    envelope (int): idx of envelope function form of dx/dt, {0: dx/dt = epsilon*phi(Sigma+u)-alpha*x (default),
+                    1: dx/dt = epsilon*[phi(Sigma)+u]-alpha*x, 2: dx/dt = epsilon*phi(Sigma)+psi*u-alpha*x}.
+    polynomial_k (int): the parameter k for polynomial interactions, only used when envelope_form='polynomial'.
+    pert_form (str): the perturbation form, supported: ['by u' (default), 'fix x']
+    dT (float): dt unit used in numerical ODE solving, default: 0.1.
+    ode_degree (int): See kernel.py for more details, default: 1.
+    ode_solver (str): The ODE solver methods used for numerical simulation,
+                      supported input: ["euler", "midpoint", "heun"(default), "rk4"]
+    ode_last_steps (int): The number of last iterations used to determine oscillation, default: 2.
+
+    ### Traning procedure
+    seed (int): The random seed used for numpy (e.g. data partition) and tensorflow (model training),
+                default: working idx + 1000 (see main.py for more details)
+    stages (dict): A dictionary with all the training procedures. Check out the ./configs/ for example stages.
+                   Note that the configs fed to the `substage` dict would override the configs fed into the `Config`
+                   instance.
+    n_epoch (int): Maximum number of epoches per substage.
+    n_iter (int): Maximum number of iterations per epoch.
+    n_iter_buffer (int): The moving window for eval losses during training. (Default: 5)
+    n_iter_patience (int): How many iterations without buffered loss on validation dataset decreases would result in
+                           an earlystop in training (for each substage). (Default: 100)
+
+    weight_loss (str): Whether to add a weight to loss metrics, currently supported input: ["expr", "None"(default)]
+    lr_val (float): The learning rate for Adam Optimizer. Note that we used the default beta1 and beta2 for Adam.
+    l1lambda (float): l1 regularization strength, default: 0.
+    l2lambda (float): l2 regularization strength, default: 0.
+    """
+
     def __init__(self, config_file):
 
         with open(config_file, "r") as f:

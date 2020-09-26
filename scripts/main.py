@@ -1,3 +1,6 @@
+"""
+This is the main script which contains interactive model construction and training/testing
+"""
 import pertbio
 import os
 import numpy as np

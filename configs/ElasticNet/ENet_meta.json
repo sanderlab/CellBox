@@ -1,5 +1,5 @@
 {
-  "experiment_id": "ENet",
+  "experiment_id": "ENet_Jun21_long_patience",
   "experiment_type": "random partition",
   "model": "CellBox",
   "sparse_data": false,
@@ -15,10 +15,10 @@
   "validset_ratio": 0.8,
   "batchsize": 4,
 
-  "envelop_form": "hill",
+  "envelop_form": "tanh",
   "dT": 0.1,
   "polynomial_k": 3,
-  "envelop":2,
+  "envelop":0,
   "ode_degree": 1,
   "ode_solver": "heun",
   "ode_last_steps": 2,
@@ -28,12 +28,12 @@
   "n_epoch": 10000,
   "n_iter": 10000,
   "n_iter_buffer":50,
-  "n_iter_patience":100,
+  "n_iter_patience":1000,
 
   "stages":[{
     "nT": 100,
     "sub_stages":[
-        {"lr_val": 0.1,"l1lambda": 0.01, "l2lambda":0, "n_iter_patience":500},
+        {"lr_val": 0.1,"l1lambda": 0.01, "l2lambda":0},
         {"lr_val": 0.01,"l1lambda": 0.01},
         {"lr_val": 0.01},
         {"lr_val": 0.001}

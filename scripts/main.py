@@ -70,7 +70,7 @@ if __name__ == '__main__':
     working_index = master_args.working_index
     cfg = pertbio.config.Config(master_args.experiment_config_path)
     cfg.ckpt_path_full = os.path.join('./', cfg.ckpt_name)
-    md5 = pertbio.utils.md5(str(vars(cfg)))
+    md5 = pertbio.utils.md5(cfg)
     cfg.drug_index = master_args.drug_index if hasattr(master_args, "drug_index") else None
     cfg.seed = working_index + cfg.seed if hasattr(cfg, "seed") else working_index + 1000
     set_seed(cfg.seed)

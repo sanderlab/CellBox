@@ -6,6 +6,7 @@ the optimizer, the timer, and the md5 key for each configuration
 import time
 import hashlib
 import tensorflow as tf
+import json
 
 
 def loss(x_gold, x_hat, W, l1=0, l2=0, weight=1.):
@@ -58,8 +59,9 @@ class TimeLogger:
             self.step_count += 1
 
 
-def md5(key):
+def md5(obj):
     """
     returns a hashed with md5 string of the key
     """
+    key = json.dumps(vars(obj), sort_keys=True)
     return hashlib.md5(key.encode()).hexdigest()

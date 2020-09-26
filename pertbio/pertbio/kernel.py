@@ -6,28 +6,28 @@ degree of ODEs, and the envelope forms
 import tensorflow as tf
 
 
-def get_envelop(args):
+def get_envelope(args):
     """get the envelope form based on the given argument"""
-    if args.envelop_form == 'tanh':
-        args.envelop_fn = tf.tanh
-    elif args.envelop_form == 'polynomial':
+    if args.envelope_form == 'tanh':
+        args.envelope_fn = tf.tanh
+    elif args.envelope_form == 'polynomial':
         k = args.polynomial_k
         assert k > 1, "Hill coefficient has to be k>2."
         if k % 2 == 1:  # odd order polynomial equation
-            args.envelop_fn = lambda x: x ** k / (1 + tf.abs(x) ** k)
+            args.envelope_fn = lambda x: x ** k / (1 + tf.abs(x) ** k)
         else:  # even order polynomial equation
-            args.envelop_fn = lambda x: x**k/(1+x**k)*tf.sign(x)
-    elif args.envelop_form == 'hill':
+            args.envelope_fn = lambda x: x**k/(1+x**k)*tf.sign(x)
+    elif args.envelope_form == 'hill':
         k = args.polynomial_k
         assert k > 1, "Hill coefficient has to be k>=2."
-        args.envelop_fn = lambda x: 2*(1-1/(1+tf.nn.relu(x+1)**k))-1
-    elif args.envelop_form == 'linear':
-        args.envelop_fn = lambda x: x
-    elif args.envelop_form == 'clip linear':
-        args.envelop_fn = lambda x: tf.clip_by_value(x, clip_value_min=-1, clip_value_max=1)
+        args.envelope_fn = lambda x: 2*(1-1/(1+tf.nn.relu(x+1)**k))-1
+    elif args.envelope_form == 'linear':
+        args.envelope_fn = lambda x: x
+    elif args.envelope_form == 'clip linear':
+        args.envelope_fn = lambda x: tf.clip_by_value(x, clip_value_min=-1, clip_value_max=1)
     else:
-        raise Exception("Illegal envelop function. Choose from [tanh, polynomial/hill]")
-    return args.envelop_fn
+        raise Exception("Illegal envelope function. Choose from [tanh, polynomial/hill]")
+    return args.envelope_fn
 
 
 def get_dxdt(args, params):
@@ -35,25 +35,23 @@ def get_dxdt(args, params):
     if args.ode_degree == 1:
         def weighted_sum(x):
             return tf.matmul(params['W'], x)
-
     elif args.ode_degree == 2:
         def weighted_sum(x):
             return tf.matmul(params['W'], x) + tf.reshape(tf.reduce_sum(params['W'], axis=1), [args.n_x, 1]) * x
-
     else:
         raise Exception("Illegal ODE degree. Choose from [1,2].")
 
-    if args.envelop == 0:
+    if args.envelope == 0:
         # epsilon*phi(Sigma+u)-alpha*x
-        return lambda x, t_mu: params['eps'] * args.envelop_fn(weighted_sum(x) + t_mu) - params['alpha'] * x
-    if args.envelop == 1:
+        return lambda x, t_mu: params['eps'] * args.envelope_fn(weighted_sum(x) + t_mu) - params['alpha'] * x
+    if args.envelope == 1:
         # epsilon*[phi(Sigma)+u]-alpha*x
-        return lambda x, t_mu: params['eps'] * (args.envelop_fn(weighted_sum(x)) + t_mu) - params['alpha'] * x
-    if args.envelop == 2:
+        return lambda x, t_mu: params['eps'] * (args.envelope_fn(weighted_sum(x)) + t_mu) - params['alpha'] * x
+    if args.envelope == 2:
         # epsilon*phi(Sigma)+psi*u-alpha*x
-        return lambda x, t_mu: params['eps'] * args.envelop_fn(weighted_sum(x)) + params['psi'] * t_mu - \
+        return lambda x, t_mu: params['eps'] * args.envelope_fn(weighted_sum(x)) + params['psi'] * t_mu - \
                                params['alpha'] * x
-    raise Exception("Illegal envelop type. Choose from [0,1,2].")
+    raise Exception("Illegal envelope type. Choose from [0,1,2].")
 
 
 def get_ode_solver(args):

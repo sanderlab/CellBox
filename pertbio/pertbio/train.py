@@ -92,14 +92,14 @@ def train_substage(model, sess, lr_val, l1_lambda, l2_lambda, n_epoch, n_iter, n
     t0 = time.clock()
     sess.run(model.iter_eval.initializer, feed_dict=args.feed_dicts['valid_set'])
     loss_valid_i, loss_valid_mse_i = eval_model(sess, model.iter_eval, (model.eval_loss, model.eval_mse_loss),
-                                                args.feed_dicts['valid_set'], max_iter=args.max_iter)
+                                                args.feed_dicts['valid_set'], n_batches_eval=args.n_batches_eval)
     append_record("record_eval.csv", [-1, None, None, loss_valid_i, None, loss_valid_mse_i, None, time.clock() - t0])
 
     # Evaluation on test set
     t0 = time.clock()
     sess.run(model.iter_eval.initializer, feed_dict=args.feed_dicts['test_set'])
     loss_test_mse = eval_model(sess, model.iter_eval, model.eval_mse_loss,
-                               args.feed_dicts['test_set'], max_iter=args.max_iter)
+                               args.feed_dicts['test_set'], n_batches_eval=args.n_batches_eval)
     append_record("record_eval.csv", [-1, None, None, None, None, None, loss_test_mse, time.clock() - t0])
 
     best_params.save()
@@ -115,7 +115,7 @@ def append_record(filename, contents):
         f.write('\n')
 
 
-def eval_model(sess, eval_iter, obj_fn, eval_dict, return_avg=True, max_iter=None):
+def eval_model(sess, eval_iter, obj_fn, eval_dict, return_avg=True, n_batches_eval=None):
     """simulate the model for prediction"""
     sess.run(eval_iter.initializer, feed_dict=eval_dict)
     counter = 0
@@ -126,7 +126,7 @@ def eval_model(sess, eval_iter, obj_fn, eval_dict, return_avg=True, max_iter=Non
         except OutOfRangeError:
             break
         counter += 1
-        if max_iter is not None and counter > max_iter:
+        if n_batches_eval is not None and counter > n_batches_eval:
             break
     if return_avg:
         return np.mean(np.array(eval_results), axis=0)
@@ -228,12 +228,7 @@ class Screenshot(dict):
         self.summary = {}
         self.summary = {}
         self.substage_i = []
-        try:
-            self.export_verbose = args.export_verbose
-            # 0: no output, 1: params only, 2: params + prediction, 3: output for each iteration
-        except Exception:
-            print("Undefined verbose. Using default: 2.")
-            self.export_verbose = 2  # default verbose: 2
+        self.export_verbose = args.export_verbose
 
     def avg_n_iters_loss(self, new_loss):
         """average the last few losses"""

@@ -26,12 +26,9 @@ def factory(cfg):
         cfg.expr = pd.read_csv(os.path.join(cfg.root_dir, cfg.expr_file), header=None, dtype=np.float32)
 
     # add noise
-    if hasattr(cfg, "add_noise_level") and cfg.add_noise_level > 0:
+    if cfg.add_noise_level > 0:
         np.random.seed(cfg.seed)
-        try:
-            assert not cfg.sparse_data
-        except Exception:
-            raise Exception("Adding noise to sparse data format is yet to be supported")
+        assert not cfg.sparse_data, "Adding noise to sparse data format is yet to be supported"
         cfg.expr.iloc[:] = cfg.expr.values + np.random.normal(loc=0, scale=cfg.add_noise_level, size=cfg.expr.shape)
 
     cfg = get_tensors(cfg)
@@ -48,9 +45,6 @@ def factory(cfg):
 
     elif cfg.experiment_type == 'single to combo':
         cfg.dataset = s2c(cfg)
-    else:
-        raise Exception('Invalid experiment type. \nValid options: [random partition, leave one out (w/o single), '
-                        'leave one out (w/ single), full data, single to combo]')
 
     # Prepare feed_dicts
     cfg.feed_dicts = {
@@ -85,8 +79,9 @@ def get_tensors(cfg):
     cfg.iter_eval = tf.compat.v1.data.make_initializable_iterator(dataset.batch(cfg.batchsize))
     return cfg
 
+
 def s2c(cfg):
-    """single-to-combo trials"""
+    """data parition for single-to-combo experiments"""
     double_idx = cfg.loo.all(axis=1)
     testidx = double_idx
 
@@ -105,12 +100,12 @@ def s2c(cfg):
 
     if cfg.sparse_data:
         dataset.update({
-            "pert_train": npz_to_feedable_arrays(cfg.pert[~testidx][valid_pos[:ntrain]]),
-            "pert_valid": npz_to_feedable_arrays(cfg.pert[~testidx][valid_pos[ntrain:]]),
-            "pert_test": npz_to_feedable_arrays(cfg.pert[testidx]),
-            "expr_train": npz_to_feedable_arrays(cfg.expr[~testidx][valid_pos[:ntrain]]),
-            "expr_valid": npz_to_feedable_arrays(cfg.expr[~testidx][valid_pos[ntrain:]]),
-            "expr_test": npz_to_feedable_arrays(cfg.expr[testidx])
+            "pert_train": sparse_to_feedable_arrays(cfg.pert[~testidx][valid_pos[:ntrain]]),
+            "pert_valid": sparse_to_feedable_arrays(cfg.pert[~testidx][valid_pos[ntrain:]]),
+            "pert_test": sparse_to_feedable_arrays(cfg.pert[testidx]),
+            "expr_train": sparse_to_feedable_arrays(cfg.expr[~testidx][valid_pos[:ntrain]]),
+            "expr_valid": sparse_to_feedable_arrays(cfg.expr[~testidx][valid_pos[ntrain:]]),
+            "expr_test": sparse_to_feedable_arrays(cfg.expr[testidx])
         })
     else:
         dataset.update({
@@ -122,13 +117,11 @@ def s2c(cfg):
             "expr_test": cfg.expr[testidx]
         })
 
-    # TODO: class Dataset of Sample instances
-
     return dataset
 
 
 def loo(cfg, singles):
-    """leave-one-drug-out trials"""
+    """data parition for leave-one-drug-out experiments"""
     drug_index = int(cfg.drug_index)
     double_idx = cfg.loo.all(axis=1)
 
@@ -153,12 +146,12 @@ def loo(cfg, singles):
 
     if cfg.sparse_data:
         dataset.update({
-            "pert_train": npz_to_feedable_arrays(cfg.pert[~testidx][valid_pos[:ntrain]]),
-            "pert_valid": npz_to_feedable_arrays(cfg.pert[~testidx][valid_pos[ntrain:]]),
-            "pert_test": npz_to_feedable_arrays(cfg.pert[testidx]),
-            "expr_train": npz_to_feedable_arrays(cfg.expr[~testidx][valid_pos[:ntrain]]),
-            "expr_valid": npz_to_feedable_arrays(cfg.expr[~testidx][valid_pos[ntrain:]]),
-            "expr_test": npz_to_feedable_arrays(cfg.expr[testidx])
+            "pert_train": sparse_to_feedable_arrays(cfg.pert[~testidx][valid_pos[:ntrain]]),
+            "pert_valid": sparse_to_feedable_arrays(cfg.pert[~testidx][valid_pos[ntrain:]]),
+            "pert_test": sparse_to_feedable_arrays(cfg.pert[testidx]),
+            "expr_train": sparse_to_feedable_arrays(cfg.expr[~testidx][valid_pos[:ntrain]]),
+            "expr_valid": sparse_to_feedable_arrays(cfg.expr[~testidx][valid_pos[ntrain:]]),
+            "expr_test": sparse_to_feedable_arrays(cfg.expr[testidx])
         })
     else:
         dataset.update({
@@ -174,7 +167,7 @@ def loo(cfg, singles):
 
 
 def random_partition(cfg):
-    """random partition of data"""
+    """random dataset partition"""
     nexp, _ = cfg.pert.shape
     nvalid = int(nexp * cfg.trainset_ratio)
     ntrain = int(nvalid * cfg.validset_ratio)
@@ -194,12 +187,12 @@ def random_partition(cfg):
 
     if cfg.sparse_data:
         dataset.update({
-            "pert_train": npz_to_feedable_arrays(cfg.pert[random_pos[:ntrain], :]),
-            "pert_valid": npz_to_feedable_arrays(cfg.pert[random_pos[ntrain:nvalid], :]),
-            "pert_test": npz_to_feedable_arrays(cfg.pert[random_pos[nvalid:], :]),
-            "expr_train": npz_to_feedable_arrays(cfg.expr[random_pos[:ntrain], :]),
-            "expr_valid": npz_to_feedable_arrays(cfg.expr[random_pos[ntrain:nvalid], :]),
-            "expr_test": npz_to_feedable_arrays(cfg.expr[random_pos[nvalid:], :])
+            "pert_train": sparse_to_feedable_arrays(cfg.pert[random_pos[:ntrain], :]),
+            "pert_valid": sparse_to_feedable_arrays(cfg.pert[random_pos[ntrain:nvalid], :]),
+            "pert_test": sparse_to_feedable_arrays(cfg.pert[random_pos[nvalid:], :]),
+            "expr_train": sparse_to_feedable_arrays(cfg.expr[random_pos[:ntrain], :]),
+            "expr_valid": sparse_to_feedable_arrays(cfg.expr[random_pos[ntrain:nvalid], :]),
+            "expr_test": sparse_to_feedable_arrays(cfg.expr[random_pos[nvalid:], :])
         })
     else:
         dataset.update({
@@ -214,7 +207,7 @@ def random_partition(cfg):
     return dataset
 
 
-def npz_to_feedable_arrays(npz):
+def sparse_to_feedable_arrays(npz):
     """convert sparse matrix to arrays"""
     coo = npz.tocoo()
     indices = [[i, j] for i, j in zip(coo.row, coo.col)]

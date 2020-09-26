@@ -126,6 +126,7 @@ def get_msg():
         -- Sept 25, 2020 --
         * Release version for publication
         * Add documentation        
+        * Rename package to 'cellbox'        
         """
     ]
     print(

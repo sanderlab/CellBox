@@ -1,5 +1,16 @@
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dfci/CellBox/version_for_revision) [![Build Status](https://travis-ci.org/dfci/CellBox.svg?branch=master)](https://travis-ci.org/dfci/CellBox)
 
+# CellBox
+This is CellBox scripts developed in Sander lab.
+
+Maintained by Bo Yuan and Judy Shen.
+
+If you want to discuss the usage or to report a bug, please use the 'Issues' function here on GitHub.
+
+If you find CellBox useful for your research, please consider citing the corresponding publication.
+bioRxiv: [link](https://www.biorxiv.org/content/10.1101/746842v3)
+
+For more information, please find our contact information [here](https://www.sanderlab.org/#/).
 # Quick Start
 
 Easily try PertBio online with Binder 
@@ -9,7 +20,7 @@ Easily try PertBio online with Binder
 3. Run the following command for a short example of model training process: 
 
 ```
-python scripts/main.py -config=configs/debugger.cellbox.json
+python scripts/main.py -config=configs/Example.random_partition.json
 ```
 
 Alternatively, in project folder, do the same command
@@ -65,7 +76,7 @@ pertbio.VERSION
 The experiment type configuration file is specified by --experiment_config_path OR -config
 
 ```
-python scripts/main.py -config=configs/random_partition.cfg.json
+python scripts/main.py -config=configs/Example.random_partition.cfg.json
 ```
 
 Note: always run the script in the root folder.
@@ -74,7 +85,7 @@ Note: always run the script in the root folder.
 A random seed can also be assigned by using argument --working_index OR -i
 
 ```
-python scripts/main.py -config=configs/random_partition.cfg.json -i=1234
+python scripts/main.py -config=configs/Example.random_partition.cfg.json -i=1234
 ```
 
 

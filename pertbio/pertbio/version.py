@@ -130,12 +130,13 @@ def get_msg():
     ]
     print(
         "Running CellBox scripts developed in Sander lab\n"
-        "Maintained by Bo Yuan and Judy Shen"
+        "Maintained by Bo Yuan, Judy Shen, and Augustin Luna"
     )
     print(changelog[-1])
     print(
         "Tutorials and documentations are available at https://github.com/dfci/CellBox\n"
         "If you want to discuss the usage or to report a bug, please use the 'Issues' function at GitHub\n"
         "If you find CellBox useful for your research, please consider citing the corresponding publication.\n"
-        "For more information, please email us at boyuan@g.harvard.edu and c_shen@g.harvard.edu\n"
+        "For more information, please email us at boyuan@g.harvard.edu and c_shen@g.harvard.edu, "
+        "augustin_luna@hms.harvard.edu\n"
     )

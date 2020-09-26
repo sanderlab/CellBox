@@ -21,7 +21,7 @@ setuptools.setup(
     tests_require=['pytest', 'pandas'],
     setup_requires=['pytest-runner', "pytest"],
     zip_safe=True,
-    keywords='Machine learning, perturbation biology',
+    keywords='Scientific machine learning, sciML, perturbation biology, interpretability',
     classifiers=[
         "Development Status :: 4 - Beta",
         "Programming Language :: Python :: 3",

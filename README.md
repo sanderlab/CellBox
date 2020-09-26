@@ -3,7 +3,7 @@
 # CellBox
 This is CellBox scripts developed in Sander lab.
 
-Maintained by Bo Yuan and Judy Shen.
+Maintained by Bo Yuan, Judy Shen, and Augustin Luna.
 
 If you want to discuss the usage or to report a bug, please use the 'Issues' function here on GitHub.
 

@@ -11,7 +11,7 @@ import shutil
 parser = argparse.ArgumentParser(description='CellBox grid search dispatcher')
 parser.add_argument('--grid_config_path', required=True, type=str, help="Path of grid search config")
 parser.add_argument('--meta_config_path', required=True, type=str, help="Path of meta search config")
-parser.add_argument('--no_submission', action='store_true', help='whether to submit jobs to O2')
+parser.add_argument('--submission', action='store_true', help='whether to submit jobs to server')
 parser.add_argument('--grid_name', required=False, default='grid', type=str, help="Name of the current grid search")
 args = parser.parse_args()
 
@@ -42,9 +42,7 @@ for modifier, barcode in zip(modifiers, barcodes):
     job.update({'experiment_id': job['experiment_id'] + '_' + args.grid_name + barcode})
     job_cfg_path = os.path.join(wdr, args.grid_name + barcode + '.json')
     json.dump(job, open(job_cfg_path, 'w'), indent=4, sort_keys=True)
-    # for i in range(args.duplicates):
-    #     print('python scripts/main.py --experiment_config_path={} --working_index={}'.format(job_cfg_path, i))
-    if not args.no_submission:
+    if args.submission:
         os.system("sbatch {} {}".format(bash_file, job_cfg_path))
     else:
         print("sbatch {} {}".format(bash_file, job_cfg_path))

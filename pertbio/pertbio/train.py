@@ -174,40 +174,6 @@ def train_model(model, args):
     tf.compat.v1.reset_default_graph()
 
 
-def simu_model(config_path, working_index, mu):
-    """Simulate the model"""
-    cfg = pertbio.config.Config(config_path)
-    cfg.ckpt_path_full = os.path.join('./', cfg.ckpt_name)
-    md5 = pertbio.utils.md5(str(vars(cfg)))
-
-    experiment_path = 'results/{}_{}'.format(cfg.experiment_id, md5)
-    working_index = cfg.model_prefix + "_" + str(working_index).zfill(3)
-
-    tf.reset_default_graph()
-    args = cfg
-
-    args.sub_stages = args.stages[-1]['sub_stages']
-    args.n_T = args.stages[-1]['nT']
-    model = pertbio.model.factory(args)
-    saver = tf.compat.v1.train.Saver()
-    sess = tf.compat.v1.Session()
-
-    file = experiment_path + '/' + working_index + '/' + cfg.ckpt_name
-    try:
-        saver.restore(sess, file)
-
-        mu = np.float32(mu)
-        if args.model == 'CellBox':
-            _, xhat = sess.run(model.forward(mu))
-        else:
-            xhat = sess.run(model.forward(mu))
-    except Exception:
-        print('Model does not exist!')
-        xhat = None
-
-    return xhat
-
-
 def save_model(saver, sess, path):
     """save model"""
     # Save the variables to disk.

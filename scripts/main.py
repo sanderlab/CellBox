@@ -1,7 +1,7 @@
 """
 This is the main script which contains interactive model construction and training/testing
 """
-import pertbio
+import cellbox
 import os
 import numpy as np
 import pandas as pd
@@ -67,22 +67,22 @@ def prepare_workdir(in_cfg):
 if __name__ == '__main__':
     # Launching expr
     working_index = master_args.working_index
-    cfg = pertbio.config.Config(master_args.experiment_config_path)
+    cfg = cellbox.config.Config(master_args.experiment_config_path)
     cfg.ckpt_path_full = os.path.join('./', cfg.ckpt_name)
-    md5 = pertbio.utils.md5(cfg)
+    md5 = cellbox.utils.md5(cfg)
     cfg.drug_index = master_args.drug_index if hasattr(master_args, "drug_index") else None
     cfg.seed = working_index + cfg.seed if hasattr(cfg, "seed") else working_index + 1000
     set_seed(cfg.seed)
     print(vars(cfg))
 
     prepare_workdir(cfg)
-    logger = pertbio.utils.TimeLogger(time_logger_step=1, hierachy=3)
+    logger = cellbox.utils.TimeLogger(time_logger_step=1, hierachy=3)
     args = cfg
     for i, stage in enumerate(cfg.stages):
         set_seed(cfg.seed)
-        cfg = pertbio.dataset.factory(cfg)
+        cfg = cellbox.dataset.factory(cfg)
         logger.log("Training on stage {}/{} ...".format(i + 1, len(cfg.stages)))
         args.sub_stages = stage['sub_stages']
         args.n_T = stage['nT']
-        model = pertbio.model.factory(args)
-        pertbio.train.train_model(model, args)
+        model = cellbox.model.factory(args)
+        cellbox.train.train_model(model, args)

@@ -5,8 +5,8 @@ CellBox, linear regression, Neural network, and co-expression
 
 import numpy as np
 import tensorflow as tf
-import pertbio.kernel
-from pertbio.utils import loss, optimize
+import cellbox.kernel
+from cellbox.utils import loss, optimize
 # import tensorflow_probability as tfp
 
 
@@ -95,9 +95,9 @@ class CellBox(PertBio):
             self.monitor_y0 = tf.transpose(self.monitor_x)
             self.eval_y0 = tf.transpose(self.eval_x)
             self.gradient_zero_from = self.args.n_activity_nodes
-        self.envelope_fn = pertbio.kernel.get_envelope(self.args)
-        self.ode_solver = pertbio.kernel.get_ode_solver(self.args)
-        self._dxdt = pertbio.kernel.get_dxdt(self.args, self.params)
+        self.envelope_fn = cellbox.kernel.get_envelope(self.args)
+        self.ode_solver = cellbox.kernel.get_ode_solver(self.args)
+        self._dxdt = cellbox.kernel.get_dxdt(self.args, self.params)
         self.convergence_metric_train, self.train_yhat = self.forward(self.train_y0, self.train_x)
         self.convergence_metric_monitor, self.monitor_yhat = self.forward(self.monitor_y0, self.monitor_x)
         self.convergence_metric_eval, self.eval_yhat = self.forward(self.eval_y0, self.eval_x)

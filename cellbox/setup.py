@@ -4,10 +4,10 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 # import ``__version__`` from code base
-exec(open('pertbio/version.py').read())
+exec(open('cellbox/version.py').read())
 
 setuptools.setup(
-    name="pertbio",
+    name="cellbox",
     version=__version__,
     author="Bo Yuan, Judy Shen, Augustin Luna",
     author_email="boyuan@g.harvard.edu, c_shen@g.harvard.edu, augustin_luna@hms.harvard.edu",
@@ -15,7 +15,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/dfci/CellBox",
-    packages=['pertbio'],
+    packages=['cellbox'],
     python_requires='>=3.6',
     install_requires=['tensorflow==1.15.0', 'numpy==1.16.0', 'pandas==0.24.2', 'scipy==1.3.0'],
     tests_require=['pytest', 'pandas', 'numpy', 'scipy'],

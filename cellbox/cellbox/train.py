@@ -9,8 +9,8 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from tensorflow.compat.v1.errors import OutOfRangeError
-import pertbio
-from pertbio.utils import TimeLogger
+import cellbox
+from cellbox.utils import TimeLogger
 
 
 def train_substage(model, sess, lr_val, l1_lambda, l2_lambda, n_epoch, n_iter, n_iter_buffer, n_iter_patience, args):

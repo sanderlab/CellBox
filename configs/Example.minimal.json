@@ -1,0 +1,22 @@
+{
+  "model": "CellBox",
+  "pert_file": "data/pert.csv",
+  "expr_file": "data/expr.csv",
+  "n_protein_nodes": 82,
+  "n_activity_nodes": 87,
+  "n_x" : 99,
+
+  "n_epoch": 10,
+  "n_iter": 1000,
+
+  "stages":[{
+    "nT": 10,
+    "sub_stages":[
+        {"lr_val": 0.1},
+        {"lr_val": 0.01}
+    ]}, {
+    "nT": 20,
+    "sub_stages":[
+        {"lr_val": 0.01}
+    ]}]
+}

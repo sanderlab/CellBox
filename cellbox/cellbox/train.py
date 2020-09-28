@@ -78,7 +78,7 @@ def train_substage(model, sess, lr_val, l1_lambda, l2_lambda, n_epoch, n_iter, n
                                                                               n_iter_patience))
 
             sess.run(model.iter_eval.initializer, feed_dict=args.feed_dicts['test_set'])
-            loss_test_mse_i = eval_model(sess, model.iter_eval, (model.eval_loss, model.eval_mse_loss),
+            loss_test_mse_i = eval_model(sess, model.iter_eval, model.eval_mse_loss,
                                          args.feed_dicts['test_set'], n_batches_eval=args.n_batches_eval)
 
             append_record("record_eval.csv",

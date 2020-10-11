@@ -34,11 +34,11 @@ def factory(cfg):
     elif cfg.corruption_type == 'additive noise':
         cfg.expr.iloc[:] = cfg.expr.values + np.random.normal(loc=0, scale=cfg.corruption_level, size=cfg.expr.shape)
     elif cfg.corruption_type == 'sample size':
-        mask = np.random.randint(0, 1 / cfg.add_dropout_level, cfg.expr.shape[0]) > 0
+        mask = np.random.randint(0, 1 / cfg.corruption_level, cfg.expr.shape[0]) > 0
         cfg.expr = cfg.expr.loc[mask]
     elif cfg.corruption_type == 'dropout':
         # simple dropout: masking with iid uniform distribution
-        mask = np.random.randint(0, 1 / cfg.add_dropout_level, cfg.expr.shape) > 0
+        mask = np.random.randint(0, 1 / cfg.corruption_level, cfg.expr.shape) 
         cfg.expr = cfg.expr * mask
 
     cfg = get_tensors(cfg)

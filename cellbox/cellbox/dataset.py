@@ -34,11 +34,12 @@ def factory(cfg):
     elif cfg.corruption_type == 'additive noise':
         cfg.expr.iloc[:] = cfg.expr.values + np.random.normal(loc=0, scale=cfg.corruption_level, size=cfg.expr.shape)
     elif cfg.corruption_type == 'sample size':
-        mask = np.random.randint(0, 1 / cfg.corruption_level, cfg.expr.shape[0]) > 0
+        mask = np.random.uniform(0, 1, cfg.expr.shape[0]) > cfg.corruption_level
         cfg.expr = cfg.expr.loc[mask]
+        cfg.pert = cfg.pert.loc[mask]
     elif cfg.corruption_type == 'simple dropout':
         # masking with iid uniform distribution
-        mask = np.random.randint(0, 1 / cfg.corruption_level, cfg.expr.shape)
+        mask = np.random.uniform(0, 1, cfg.expr.shape) > cfg.corruption_level
         cfg.expr = cfg.expr * mask
     elif cfg.corruption_type == 'value-dependent dropout':
         #  dropping the bottom p values

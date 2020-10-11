@@ -36,9 +36,14 @@ def factory(cfg):
     elif cfg.corruption_type == 'sample size':
         mask = np.random.randint(0, 1 / cfg.corruption_level, cfg.expr.shape[0]) > 0
         cfg.expr = cfg.expr.loc[mask]
-    elif cfg.corruption_type == 'dropout':
-        # simple dropout: masking with iid uniform distribution
-        mask = np.random.randint(0, 1 / cfg.corruption_level, cfg.expr.shape) 
+    elif cfg.corruption_type == 'simple dropout':
+        # masking with iid uniform distribution
+        mask = np.random.randint(0, 1 / cfg.corruption_level, cfg.expr.shape)
+        cfg.expr = cfg.expr * mask
+    elif cfg.corruption_type == 'value-dependent dropout':
+        #  dropping the bottom p values
+        ther = np.quantile(abs(cfg.expr), cfg.corruption_level)
+        mask = abs(cfg.expr) > ther
         cfg.expr = cfg.expr * mask
 
     cfg = get_tensors(cfg)

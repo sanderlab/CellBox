@@ -35,6 +35,7 @@ class Config(object):
     batchsize (int): The batch size for each iteration. (Default: 8)
     n_batches_eval (int): Maximum number of batches for model evaluation (use when the validation/test dataset is large)
     add_noise_level (float): the sigma of Gaussian noise added onto expr data file during training, default: 0.
+    add_dropout_level (float): the probability of synthetic dropout events, default: 0.
 
     ### Details for the ODE kernel (See kernel.py for more details)
     envelope_form (str): the nonlinear envelope function in a string format, supported: ["tanh" (default), "polynomial"]
@@ -85,6 +86,7 @@ class Config(object):
         self.validset_ratio = config_dict["validset_ratio"] if "validset_ratio" in config_dict else 0.8
         self.n_batches_eval = config_dict["n_batches_eval"] if "n_batches_eval" in config_dict else None
         self.add_noise_level = config_dict["add_noise_level"] if "add_noise_level" in config_dict else 0
+        self.add_noise_level = config_dict["add_dropout_level"] if "add_dropout_level" in config_dict else 0
 
         self.dT = config_dict["dT"] if "dT" in config_dict else 0.1
         self.ode_solver = config_dict["ode_solver"] if "ode_solver" in config_dict else "heun"

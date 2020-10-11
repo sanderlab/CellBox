@@ -31,6 +31,13 @@ def factory(cfg):
         assert not cfg.sparse_data, "Adding noise to sparse data format is yet to be supported"
         cfg.expr.iloc[:] = cfg.expr.values + np.random.normal(loc=0, scale=cfg.add_noise_level, size=cfg.expr.shape)
 
+    if cfg.add_dropout_level > 0:
+        # simple dropout: masking with iid uniform distribution
+        np.random.seed(cfg.seed)
+        p = cfg.add_dropout_level
+        mask = np.floor(np.random.randint(0, 1 / p, cfg.expr.shape) / (1 / p - 1))
+        cfg.expr.iloc[:] = cfg.expr.values * mask
+
     cfg = get_tensors(cfg)
 
     # Data partition

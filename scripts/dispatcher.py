@@ -15,7 +15,7 @@ parser.add_argument('--submission', action='store_true', help='whether to submit
 parser.add_argument('--grid_name', required=False, default='grid', type=str, help="Name of the current grid search")
 args = parser.parse_args()
 
-grid = json.load(open(args.grid_config_path, 'r'))
+grids = json.load(open(args.grid_config_path, 'r'))
 meta_cfg = json.load(open(args.meta_config_path, 'r'))
 
 
@@ -25,18 +25,25 @@ def append(parent_job, new_handle):
     return job
 
 
-modifiers = [{}]
-barcodes = ['']
-for key in grid:
-    modifiers = [append(job, {key: val}) for job in modifiers for val in grid[key]]
-    barcodes = [barcode + '_{}'.format(i) for barcode in barcodes for i, _ in enumerate(grid[key])]
+modifiers_grids = []
+barcodes_grids = []
+for grid_key in grids:
+    grid = grids[grid_key]
+    modifiers = [{}]
+    barcodes = ['']
+    for key in grid:
+        modifiers = [append(job, {key: val}) for job in modifiers for val in grid[key]]
+        barcodes = [barcode + '_{}'.format(i) for barcode in barcodes for i, _ in enumerate(grid[key])]
+    barcodes = ['_' + grid_key + barcode for barcode in barcodes]
+    modifiers_grids = modifiers_grids + modifiers
+    barcodes_grids = barcodes_grids + barcodes
 
 wdr = os.path.join(os.path.dirname(args.meta_config_path), 'grid_search')
 bash_file = os.path.join(os.path.dirname(args.meta_config_path), 'run.sh')
 if os.path.exists(wdr):
     shutil.rmtree(wdr)
 os.makedirs(wdr)
-for modifier, barcode in zip(modifiers, barcodes):
+for modifier, barcode in zip(modifiers_grids, barcodes_grids):
     job = meta_cfg.copy()
     job.update(modifier)
     job.update({'experiment_id': job['experiment_id'] + '_' + args.grid_name + barcode})

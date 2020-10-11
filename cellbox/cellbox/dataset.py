@@ -25,28 +25,6 @@ def factory(cfg):
         cfg.pert = pd.read_csv(os.path.join(cfg.root_dir, cfg.pert_file), header=None, dtype=np.float32)
         cfg.expr = pd.read_csv(os.path.join(cfg.root_dir, cfg.expr_file), header=None, dtype=np.float32)
 
-    # add noise
-    assert not(cfg.corruption_type != 'none' and cfg.sparse_data), \
-        "Adding noise to sparse data format is yet to be supported"
-    np.random.seed(cfg.seed)
-    if cfg.corruption_type == 'multiplicative noise':
-        cfg.expr.iloc[:] = cfg.expr.values * np.random.normal(loc=1, scale=cfg.corruption_level, size=cfg.expr.shape)
-    elif cfg.corruption_type == 'additive noise':
-        cfg.expr.iloc[:] = cfg.expr.values + np.random.normal(loc=0, scale=cfg.corruption_level, size=cfg.expr.shape)
-    elif cfg.corruption_type == 'sample size':
-        mask = np.random.uniform(0, 1, cfg.expr.shape[0]) > cfg.corruption_level
-        cfg.expr = cfg.expr.loc[mask]
-        cfg.pert = cfg.pert.loc[mask]
-    elif cfg.corruption_type == 'simple dropout':
-        # masking with iid uniform distribution
-        mask = np.random.uniform(0, 1, cfg.expr.shape) > cfg.corruption_level
-        cfg.expr = cfg.expr * mask
-    elif cfg.corruption_type == 'value-dependent dropout':
-        #  dropping the bottom p values
-        ther = np.quantile(abs(cfg.expr), cfg.corruption_level)
-        mask = abs(cfg.expr) > ther
-        cfg.expr = cfg.expr * mask
-
     cfg = get_tensors(cfg)
 
     # Data partition
@@ -61,6 +39,9 @@ def factory(cfg):
 
     elif cfg.experiment_type == 'single to combo':
         cfg.dataset = s2c(cfg)
+
+    # add noise
+    cfg = add_corruption(cfg)
 
     # Prepare feed_dicts
     cfg.feed_dicts = {
@@ -93,6 +74,45 @@ def get_tensors(cfg):
     cfg.iter_monitor = tf.compat.v1.data.make_initializable_iterator(
         dataset.repeat().shuffle(buffer_size=1024, reshuffle_each_iteration=True).batch(cfg.batchsize))
     cfg.iter_eval = tf.compat.v1.data.make_initializable_iterator(dataset.batch(cfg.batchsize))
+    return cfg
+
+
+def add_corruption(cfg):
+    assert not(cfg.corruption_type != 'none' and cfg.sparse_data), \
+        "Adding noise to sparse data format is yet to be supported"
+    np.random.seed(cfg.seed)
+    if cfg.corruption_type == 'multiplicative noise':
+        for key in ["expr_train", "expr_valid"]:
+            df = cfg.dataset[key]
+            cfg.dataset[key] = df * np.random.normal(loc=1, scale=cfg.corruption_level, size=df.shape)
+
+    elif cfg.corruption_type == 'additive noise':
+        for key in ["expr_train", "expr_valid"]:
+            df = cfg.dataset[key]
+            cfg.dataset[key] = df + np.random.normal(loc=0, scale=cfg.corruption_level, size=df.shape)
+
+    elif cfg.corruption_type == 'sample size':
+        for key in ["train", "valid"]:
+            df = cfg.dataset["expr_" + key]
+            mask = np.random.uniform(0, 1, df.shape[0]) > cfg.corruption_level
+            cfg.dataset["expr_" + key] = cfg.dataset["expr_" + key].loc[mask]
+            cfg.dataset["pert_" + key] = cfg.dataset["pert_" + key].loc[mask]
+
+    elif cfg.corruption_type == 'simple dropout':
+        # masking with iid uniform distribution
+        for key in ["expr_train", "expr_valid"]:
+            df = cfg.dataset[key]
+            mask = np.random.uniform(0, 1, df.shape) > cfg.corruption_level
+            cfg.dataset[key] = cfg.dataset[key] * mask
+
+    elif cfg.corruption_type == 'value-dependent dropout':
+        #  dropping the bottom p values
+        for key in ["expr_train", "expr_valid"]:
+            df = cfg.dataset[key]
+            ther = np.quantile(abs(df), cfg.corruption_level)
+            mask = abs(df) > ther
+            cfg.dataset[key] = cfg.dataset[key] * mask
+
     return cfg
 
 

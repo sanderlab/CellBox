@@ -95,8 +95,8 @@ def add_corruption(cfg):
         for key in ["train", "valid"]:
             df = cfg.dataset["expr_" + key]
             mask = np.random.uniform(0, 1, df.shape[0]) > cfg.corruption_level
-            cfg.dataset["expr_" + key] = cfg.dataset["expr_" + key].loc[mask]
-            cfg.dataset["pert_" + key] = cfg.dataset["pert_" + key].loc[mask]
+            cfg.dataset["expr_" + key] = cfg.dataset["expr_" + key][mask]
+            cfg.dataset["pert_" + key] = cfg.dataset["pert_" + key][mask]
 
     elif cfg.corruption_type == 'simple dropout':
         # masking with iid uniform distribution

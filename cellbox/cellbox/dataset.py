@@ -78,6 +78,10 @@ def get_tensors(cfg):
 
 
 def add_corruption(cfg):
+    print("Attemping to add corruption...")
+    if cfg.export_verbose > 2:
+        print("Input file shape: ", {key: cfg.dataset[key] for key in cfg.dataset})
+        print("Input file data range: ", {key: np.histogram(cfg.dataset[key]) for key in cfg.dataset})
     assert not(cfg.corruption_type != 'none' and cfg.sparse_data), \
         "Adding noise to sparse data format is yet to be supported"
     np.random.seed(cfg.seed)
@@ -112,7 +116,10 @@ def add_corruption(cfg):
             ther = np.quantile(abs(df), cfg.corruption_level)
             mask = abs(df) > ther
             cfg.dataset[key] = cfg.dataset[key] * mask
-
+    if cfg.export_verbose > 2:
+        print("After corruption...")
+        print("Input file shape: ", {key: cfg.dataset[key] for key in cfg.dataset})
+        print("Input file data range: ", {key: np.histogram(cfg.dataset[key]) for key in cfg.dataset})
     return cfg
 
 

@@ -26,17 +26,20 @@ def factory(cfg):
         cfg.expr = pd.read_csv(os.path.join(cfg.root_dir, cfg.expr_file), header=None, dtype=np.float32)
 
     # add noise
-    if cfg.add_noise_level > 0:
-        np.random.seed(cfg.seed)
-        assert not cfg.sparse_data, "Adding noise to sparse data format is yet to be supported"
-        cfg.expr.iloc[:] = cfg.expr.values + np.random.normal(loc=0, scale=cfg.add_noise_level, size=cfg.expr.shape)
-
-    if cfg.add_dropout_level > 0:
+    assert not(cfg.corruption_type != 'none' and cfg.sparse_data), \
+        "Adding noise to sparse data format is yet to be supported"
+    np.random.seed(cfg.seed)
+    if cfg.corruption_type == 'multiplicative noise':
+        cfg.expr.iloc[:] = cfg.expr.values * np.random.normal(loc=1, scale=cfg.corruption_level, size=cfg.expr.shape)
+    elif cfg.corruption_type == 'additive noise':
+        cfg.expr.iloc[:] = cfg.expr.values + np.random.normal(loc=0, scale=cfg.corruption_level, size=cfg.expr.shape)
+    elif cfg.corruption_type == 'sample size':
+        mask = np.random.randint(0, 1 / cfg.add_dropout_level, cfg.expr.shape[0]) > 0
+        cfg.expr = cfg.expr.loc[mask]
+    elif cfg.corruption_type == 'dropout':
         # simple dropout: masking with iid uniform distribution
-        np.random.seed(cfg.seed)
-        p = cfg.add_dropout_level
-        mask = np.floor(np.random.randint(0, 1 / p, cfg.expr.shape) / (1 / p - 1))
-        cfg.expr.iloc[:] = cfg.expr.values * mask
+        mask = np.random.randint(0, 1 / cfg.add_dropout_level, cfg.expr.shape) > 0
+        cfg.expr = cfg.expr * mask
 
     cfg = get_tensors(cfg)
 

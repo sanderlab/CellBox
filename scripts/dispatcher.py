@@ -34,7 +34,7 @@ for grid_key in grids:
     for key in grid:
         modifiers = [append(job, {key: val}) for job in modifiers for val in grid[key]]
         barcodes = [barcode + '_{}'.format(i) for barcode in barcodes for i, _ in enumerate(grid[key])]
-    barcodes = [grid_key + '_' + barcode for barcode in barcodes]
+    barcodes = ['_' + grid_key + barcode for barcode in barcodes]
     modifiers_grids = modifiers_grids + modifiers
     barcodes_grids = barcodes_grids + barcodes
 

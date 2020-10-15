@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from scipy import sparse
+import scipy.stats as stats
 
 
 def factory(cfg):
@@ -90,6 +91,12 @@ def add_corruption(cfg):
         for key in ["expr_train", "expr_valid"]:
             df = cfg.dataset[key]
             cfg.dataset[key] = df * np.random.normal(loc=1, scale=cfg.corruption_level, size=df.shape)
+            
+    elif cfg.corruption_type == 'origin-multiplicative noise':
+        for key in ["expr_train", "expr_valid"]:
+            df = cfg.dataset[key]
+            trnorm = stats.truncnorm(-1/cfg.corruption_level,99/cfg.corruption_level,loc=1,scale=cfg.corruption_level)
+            cfg.dataset[key] = df + np.log2(trnorm.rvs(size=df.shape)/trnorm.rvs(size=df.shape))
 
     elif cfg.corruption_type == 'additive noise':
         for key in ["expr_train", "expr_valid"]:

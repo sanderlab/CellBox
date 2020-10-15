@@ -113,17 +113,19 @@ def add_corruption(cfg):
     elif cfg.corruption_type == 'simple dropout':
         # masking with iid uniform distribution
         for key in ["expr_train", "expr_valid"]:
-            df = cfg.dataset[key]
+            df = cfg.dataset[key][:, :n_protein_nodes]
             mask = np.random.uniform(0, 1, df.shape) > cfg.corruption_level
-            cfg.dataset[key] = cfg.dataset[key] * mask
+            cfg.dataset[key][:, :n_protein_nodes] = df * mask
 
     elif cfg.corruption_type == 'value-dependent dropout':
         #  dropping the bottom p values
+        n_protein_nodes = cfg.n_protein_nodes
         for key in ["expr_train", "expr_valid"]:
-            df = cfg.dataset[key]
+            df = cfg.dataset[key][:, :n_protein_nodes]
             ther = np.quantile(abs(df), cfg.corruption_level)
             mask = abs(df) > ther
-            cfg.dataset[key] = cfg.dataset[key] * mask
+            cfg.dataset[key][:, :n_protein_nodes] = df * mask
+
     if cfg.export_verbose > 2:
         print("After corruption...")
         print("Input file shape: ", {key: cfg.dataset[key].shape for key in keys})

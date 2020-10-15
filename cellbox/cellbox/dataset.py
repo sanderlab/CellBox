@@ -112,6 +112,7 @@ def add_corruption(cfg):
 
     elif cfg.corruption_type == 'simple dropout':
         # masking with iid uniform distribution
+        n_protein_nodes = cfg.n_protein_nodes
         for key in ["expr_train", "expr_valid"]:
             df = cfg.dataset[key][:, :n_protein_nodes]
             mask = np.random.uniform(0, 1, df.shape) > cfg.corruption_level

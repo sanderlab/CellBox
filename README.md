@@ -1,16 +1,24 @@
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dfci/CellBox/version_for_revision) [![Build Status](https://travis-ci.org/dfci/CellBox.svg?branch=master)](https://travis-ci.org/dfci/CellBox)
 
 # CellBox
-This is CellBox scripts developed in Sander lab.
+
+## Abstract
+Systematic perturbation of cells followed by comprehensive measurements of molecular and phenotypic responses provides informative data resources for constructing computational models of cell biology. Models that generalize well beyond training data can be used to identify combinatorial perturbations of potential therapeutic interest. Major challenges for machine learning on large biological datasets are to find global optima in a complex multi-dimensional space and mechanistically interpret the solutions. To address these challenges, we introduce a hybrid approach that combines explicit mathematical models of cell dynamics with a machine learning framework, implemented in TensorFlow. We tested the modeling framework on a perturbation-response dataset of a melanoma cell line after drug treatments. The models can be efficiently trained to describe cellular behavior accurately. Even though completely data-driven and independent of prior knowledge, the resulting de novo network models recapitulate some known interactions. The approach is readily applicable to various kinetic models of cell biology. 
+
+## Correspondence
+
+This is CellBox scripts developed in Sander lab for the paper [bioRxiv](https://www.biorxiv.org/content/10.1101/746842v3)
+
+>Yuan, B.*, Shen, C.*, Luna, A., Korkut, A., Marks, D., Ingraham, J., Sander, C. CellBox: Interpretable Machine Learning for Perturbation Biology with Application to the Design of Cancer Combination Therapy. _Cell Systems_, 2020. (In press)
 
 Maintained by Bo Yuan, Judy Shen, and Augustin Luna.
 
 If you want to discuss the usage or to report a bug, please use the 'Issues' function here on GitHub.
 
 If you find `CellBox` useful for your research, please consider citing the corresponding publication.
-bioRxiv: [link](https://www.biorxiv.org/content/10.1101/746842v3)
 
 For more information, please find our contact information [here](https://www.sanderlab.org/#/).
+
 # Quick Start
 
 Easily try `CellBox` online with Binder 

@@ -5,6 +5,10 @@
 ## Abstract
 Systematic perturbation of cells followed by comprehensive measurements of molecular and phenotypic responses provides informative data resources for constructing computational models of cell biology. Models that generalize well beyond training data can be used to identify combinatorial perturbations of potential therapeutic interest. Major challenges for machine learning on large biological datasets are to find global optima in a complex multi-dimensional space and mechanistically interpret the solutions. To address these challenges, we introduce a hybrid approach that combines explicit mathematical models of cell dynamics with a machine learning framework, implemented in TensorFlow. We tested the modeling framework on a perturbation-response dataset of a melanoma cell line after drug treatments. The models can be efficiently trained to describe cellular behavior accurately. Even though completely data-driven and independent of prior knowledge, the resulting de novo network models recapitulate some known interactions. The approach is readily applicable to various kinetic models of cell biology. 
 
+<p align="center">
+	<img src="https://lh3.googleusercontent.com/d/15Lildcx8sC4shTalODLXqfibJTbnxmun=w600">
+</p>
+
 ## Correspondence
 
 This is CellBox scripts developed in Sander lab for the paper [bioRxiv](https://www.biorxiv.org/content/10.1101/746842v3)

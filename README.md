@@ -11,9 +11,9 @@ Systematic perturbation of cells followed by comprehensive measurements of molec
 
 ## Correspondence
 
-This is CellBox scripts developed in Sander lab for the paper [bioRxiv](https://www.biorxiv.org/content/10.1101/746842v3)
+This is CellBox scripts developed in Sander lab for the paper in _[Cell Systems](https://www.cell.com/cell-systems/pdfExtended/S2405-4712(20)30464-6)_ or [bioRxiv](https://www.biorxiv.org/content/10.1101/746842v3).
 
->Yuan, B.*, Shen, C.*, Luna, A., Korkut, A., Marks, D., Ingraham, J., Sander, C. CellBox: Interpretable Machine Learning for Perturbation Biology with Application to the Design of Cancer Combination Therapy. _Cell Systems_, 2020. (In press)
+>Yuan, B.*, Shen, C.*, Luna, A., Korkut, A., Marks, D., Ingraham, J., Sander, C. CellBox: Interpretable Machine Learning for Perturbation Biology with Application to the Design of Cancer Combination Therapy. _Cell Systems_, 2020. 
 
 Maintained by Bo Yuan, Judy Shen, and Augustin Luna.
 

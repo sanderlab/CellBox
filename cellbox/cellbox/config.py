@@ -85,7 +85,6 @@ class Config(object):
         self.validset_ratio = config_dict["validset_ratio"] if "validset_ratio" in config_dict else 0.8
         self.n_batches_eval = config_dict["n_batches_eval"] if "n_batches_eval" in config_dict else None
         self.add_noise_level = config_dict["add_noise_level"] if "add_noise_level" in config_dict else 0
-        self.loo_label = config_dict['loo_label'] if 'loo_label' in config_dict else "data/loo_label.csv"
         self.dT = config_dict["dT"] if "dT" in config_dict else 0.1
         self.ode_solver = config_dict["ode_solver"] if "ode_solver" in config_dict else "heun"
         assert self.ode_solver in ["heun", "euler", "rk4", "midpoint"], NotImplementedError

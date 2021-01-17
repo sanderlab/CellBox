@@ -29,8 +29,6 @@ def prepare_workdir(in_cfg):
     in_cfg.node_index = pd.read_csv(in_cfg.node_index_file, header=None, names=None) \
         if hasattr(in_cfg, 'node_index_file') else pd.DataFrame(np.arange(in_cfg.n_x))
 
-    in_cfg.loo = pd.read_csv(in_cfg.loo_label, header=None)
-
     # Create Output Folder
     experiment_path = 'results/{}_{}'.format(in_cfg.experiment_id, md5)
     try:

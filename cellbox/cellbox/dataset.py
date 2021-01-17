@@ -216,10 +216,10 @@ def random_partition_with_replicates(cfg):
     nexp = len(np.unique(cfg.loo, axis=0))
     nvalid = int(nexp * cfg.trainset_ratio)
     ntrain = int(nvalid * cfg.validset_ratio)
-    conds_train_idx = np.random.choice(range(n_all_conds), n_all_conds, replace=False)
-    pos_train = [idx in conds_train_idx[:ntrain] for idx in cfg.loo.values]
-    pos_valid = [idx in conds_train_idx[ntrain:nvalid] for idx in cfg.loo.values]
-    pos_test = [idx in conds_train_idx[nvalid:] for idx in cfg.loo.values]
+    conds_train_idx = np.random.choice(range(nexp), n_all_conds, replace=False)
+    pos_train = [idx in conds_train_idx[:ntrain] for idx in cfg.loo]
+    pos_valid = [idx in conds_train_idx[ntrain:nvalid] for idx in cfg.loo]
+    pos_test = [idx in conds_train_idx[nvalid:] for idx in cfg.loo]
 
     try:
         random_pos = np.genfromtxt('random_pos.csv', defaultfmt='%d')

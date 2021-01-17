@@ -213,7 +213,7 @@ def random_partition(cfg):
 
 def random_partition_with_replicates(cfg):
     """random dataset partition"""
-    nexp = len(np.unique(cfg.loo.values, axis=0))
+    nexp = len(np.unique(cfg.loo, axis=0))
     nvalid = int(nexp * cfg.trainset_ratio)
     ntrain = int(nvalid * cfg.validset_ratio)
     conds_train_idx = np.random.choice(range(n_all_conds), n_all_conds, replace=False)

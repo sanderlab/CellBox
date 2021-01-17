@@ -46,6 +46,9 @@ def factory(cfg):
     elif cfg.experiment_type == 'single to combo':
         cfg.dataset = s2c(cfg)
 
+    elif cfg.experiment_type == 'random partition with replicates':
+        cfg.dataset = random_partition_with_replicates(cfg)
+
     # Prepare feed_dicts
     cfg.feed_dicts = {
         'train_set': {
@@ -205,6 +208,55 @@ def random_partition(cfg):
         })
 
     return dataset
+
+
+def random_partition_with_replicates(cfg):
+    """random dataset partition"""
+    nexp, _ = cfg.pert.shape
+    nvalid = int(nexp * cfg.trainset_ratio)
+    ntrain = int(nvalid * cfg.validset_ratio)
+    all_conds = np.unique(cfg.loo.values, axis=0)
+    n_all_conds = len(all_conds)
+    conds_train_idx = np.random.choice(range(n_all_conds), n_all_conds, replace=False)
+    pos_train = [idx in conds_train_idx[:ntrain] for idx in cfg.loo.values]
+    pos_valid = [idx in conds_train_idx[ntrain:nvalid] for idx in cfg.loo.values]
+    pos_test = [idx in conds_train_idx[nvalid:] for idx in cfg.loo.values]
+
+    try:
+        random_pos = np.genfromtxt('random_pos.csv', defaultfmt='%d')
+    except Exception:
+        random_pos = np.concatenate([pos_train, pos_valid, pos_test])
+        np.savetxt('random_pos.csv', random_pos, fmt='%d')
+
+    dataset = {
+        "node_index": cfg.node_index,
+        "pert_full": cfg.pert,
+        "train_pos": random_pos[:ntrain],
+        "valid_pos": random_pos[ntrain:nvalid],
+        "test_pos": random_pos[nvalid:]
+    }
+
+    if cfg.sparse_data:
+        dataset.update({
+            "pert_train": sparse_to_feedable_arrays(cfg.pert[random_pos[:ntrain], :]),
+            "pert_valid": sparse_to_feedable_arrays(cfg.pert[random_pos[ntrain:nvalid], :]),
+            "pert_test": sparse_to_feedable_arrays(cfg.pert[random_pos[nvalid:], :]),
+            "expr_train": sparse_to_feedable_arrays(cfg.expr[random_pos[:ntrain], :]),
+            "expr_valid": sparse_to_feedable_arrays(cfg.expr[random_pos[ntrain:nvalid], :]),
+            "expr_test": sparse_to_feedable_arrays(cfg.expr[random_pos[nvalid:], :])
+        })
+    else:
+        dataset.update({
+            "pert_train": cfg.pert.iloc[random_pos[:ntrain], :].values,
+            "pert_valid": cfg.pert.iloc[random_pos[ntrain:nvalid], :].values,
+            "pert_test": cfg.pert.iloc[random_pos[nvalid:], :].values,
+            "expr_train": cfg.expr.iloc[random_pos[:ntrain], :].values,
+            "expr_valid": cfg.expr.iloc[random_pos[ntrain:nvalid], :].values,
+            "expr_test": cfg.expr.iloc[random_pos[nvalid:], :].values
+        })
+
+    return dataset
+
 
 
 def sparse_to_feedable_arrays(npz):

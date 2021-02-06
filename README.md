@@ -32,7 +32,7 @@ Easily try `CellBox` online with Binder
 3. Run the following command for a short example of model training process: 
 
 ```
-python scripts/main.py -config=configs/Example.random_partition.json
+python scripts/main.py -config=configs/example.random_partition.json
 ```
 
 Alternatively, in project folder, do the same command

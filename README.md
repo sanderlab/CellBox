@@ -88,7 +88,7 @@ cellbox.VERSION
 The experiment type configuration file is specified by `--experiment_config_path` or `-config`
 
 ```
-python scripts/main.py -config=configs/Example.random_partition.cfg.json
+python scripts/main.py -config=configs/Example.random_partition.json
 ```
 
 Note: always run the script in the root folder.
@@ -97,7 +97,7 @@ Note: always run the script in the root folder.
 A random seed can also be assigned by using argument `--working_index` or `-i`
 
 ```
-python scripts/main.py -config=configs/Example.random_partition.cfg.json -i=1234
+python scripts/main.py -config=configs/Example.random_partition.json -i=1234
 ```
 
 

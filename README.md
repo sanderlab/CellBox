@@ -1,4 +1,4 @@
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dfci/CellBox/version_for_revision) [![Build Status](https://travis-ci.org/dfci/CellBox.svg?branch=master)](https://travis-ci.org/dfci/CellBox)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dfci/CellBox/version_for_revision) [![Build Status](https://travis-ci.org/dfci/CellBox.svg?branch=master)](https://travis-ci.org/dfci/CellBox)![Repo Visitors](https://visitor-badge.glitch.me/badge?page_id=sanderlab.CellBox)
 
 # CellBox
 

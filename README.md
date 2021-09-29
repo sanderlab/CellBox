@@ -66,7 +66,7 @@ cellbox.VERSION
 
 ## Data files: in ./data/ folder
 * `node_index.txt`: names of each protein/phenotypic node.
-* `expr_index.txt`: information each perturbation condition (also see loo_label.csv).
+* `expr_index.txt`: information each perturbation condition. This is one of the original data files we downloaded from [paper](https://elifesciences.org/articles/04640) and is only used here as a reference for the condition names. In other words the 2nd and 3rd columns are not being used in CellBox. See `loo_label.csv` for the actual indexing of perturbation targets.
 * `expr.csv`: Protein expression data from RPPA for the protein nodes and phenotypic node values. Each row is a condition while each column is a node.
 * `pert.csv`: Perturbation strength and target of all perturbation conditions. Used as input for differential equations.
 

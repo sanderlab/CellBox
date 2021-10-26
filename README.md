@@ -1,4 +1,4 @@
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dfci/CellBox/version_for_revision) [![Build Status](https://travis-ci.org/dfci/CellBox.svg?branch=master)](https://travis-ci.org/dfci/CellBox) ![Repo Visitors](https://visitor-badge.glitch.me/badge?page_id=sanderlab.CellBox)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/sanderlab/CellBox/9d13f3354f8b14bd896de6c8aa5db0b97c65ad12) ![Repo Visitors](https://visitor-badge.glitch.me/badge?page_id=sanderlab.CellBox)
 
 # CellBox
 
@@ -27,12 +27,12 @@ For more information, please find our contact information [here](https://www.san
 
 Easily try `CellBox` online with Binder 
 
-1. Go to: https://mybinder.org/v2/gh/dfci/CellBox/version_for_revision
+1. Go to: https://mybinder.org/v2/gh/sanderlab/CellBox/9d13f3354f8b14bd896de6c8aa5db0b97c65ad12
 2. From the New dropdown, click Terminal 
 3. Run the following command for a short example of model training process: 
 
 ```
-python scripts/main.py -config=configs/example.random_partition.json
+python scripts/main.py -config=configs/Example.random_partition.json
 ```
 
 Alternatively, in project folder, do the same command

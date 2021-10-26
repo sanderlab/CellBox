@@ -1,5 +1,5 @@
 -i https://pypi.org/simple
-git+https://github.com/sanderlab/CellBox.git@cell_systems_final#egg=version_subpkg&subdirectory=cellbox
+git+https://github.com/sanderlab/CellBox.git@cell_systems_final#egg=pkg&subdirectory=cellbox
 setuptools==39.1.0
 absl-py==0.7.1
 astor==0.8.0

@@ -17,7 +17,7 @@ setuptools.setup(
     url="https://github.com/dfci/CellBox",
     packages=['cellbox'],
     python_requires='>=3.6',
-    install_requires=['tensorflow==1.15.0', 'numpy==1.16.0', 'pandas==0.24.2', 'scipy==1.3.0'],
+    install_requires=['tensorflow==2.7.2', 'numpy==1.16.0', 'pandas==0.24.2', 'scipy==1.3.0'],
     tests_require=['pytest', 'pandas', 'numpy', 'scipy'],
     setup_requires=['pytest-runner', "pytest"],
     zip_safe=True,

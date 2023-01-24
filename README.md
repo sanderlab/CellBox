@@ -43,7 +43,7 @@ Alternatively, in project folder, do the same command
 The following command will install cellbox from a particular branch using the '@' notation:
 
 ```
-pip install git+https://github.com/dfci/CellBox.git@version_for_revision#egg=cellbox\&subdirectory=cellbox
+pip install git+https://github.com/dfci/CellBox.git@cell_systems_final#egg=cellbox\&subdirectory=cellbox
 ```
 
 ## Install using setup.py

@@ -1,4 +1,4 @@
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/sanderlab/CellBox/9d13f3354f8b14bd896de6c8aa5db0b97c65ad12) ![Repo Visitors](https://visitor-badge.glitch.me/badge?page_id=sanderlab.CellBox)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/sanderlab/CellBox/9d13f3354f8b14bd896de6c8aa5db0b97c65ad12)
 
 # CellBox
 

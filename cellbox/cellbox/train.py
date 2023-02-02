@@ -7,10 +7,11 @@ import glob
 import time
 import numpy as np
 import pandas as pd
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 from tensorflow.compat.v1.errors import OutOfRangeError
 import cellbox
 from cellbox.utils import TimeLogger
+tf.disable_v2_behavior()
 
 
 def train_substage(model, sess, lr_val, l1_lambda, l2_lambda, n_epoch, n_iter, n_iter_buffer, n_iter_patience, args):

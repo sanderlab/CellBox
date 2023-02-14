@@ -104,14 +104,14 @@ def get_msg():
 
         """        
         version 0.2.3
-        -- June 8, 2020 --
+        -- Jun 8, 2020 --
         * Add support to L2 loss (alone or together with L1, i.e. elastic net)
         * Clean the example configs folder
         """,
 
         """
         version 0.3.0
-        -- June 8, 2020 --
+        -- Jun 8, 2020 --
         Add support for alternative form of perturbation
         * Previous: add u on activity nodes
         * New: fix activity nodes directly
@@ -123,10 +123,16 @@ def get_msg():
 
         """
         version 0.3.1
-        -- Sept 25, 2020 --
+        -- Sep 25, 2020 --
         * Release version for publication
         * Add documentation        
         * Rename package to 'cellbox'        
+        """,
+        
+        """
+        version 0.3.2
+        -- Feb 10, 2023 --
+        * Modify CellBox to support TF2     
         """
     ]
     print(
@@ -138,12 +144,12 @@ def get_msg():
         " | |___|  __/ | | |_) | (_) >  <   \n"
         "  \_____\___|_|_|____/ \___/_/\_\  \n"
         "Running CellBox scripts developed in Sander lab\n"
-        "Maintained by Bo Yuan, Judy Shen, and Augustin Luna"
+        "Maintained by Bo Yuan, Judy Shen, and Augustin Luna; contributions by Daniel Ritter"
     )
 
     print(changelog[-1])
     print(
-        "Tutorials and documentations are available at https://github.com/dfci/CellBox\n"
+        "Tutorials and documentations are available at https://github.com/sanderlab/CellBox\n"
         "If you want to discuss the usage or to report a bug, please use the 'Issues' function at GitHub.\n"
         "If you find CellBox useful for your research, please consider citing the corresponding publication.\n"
         "For more information, please email us at boyuan@g.harvard.edu and c_shen@g.harvard.edu, "

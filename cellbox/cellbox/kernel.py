@@ -3,7 +3,8 @@ This module defines the ODE formulations, including the choices of ODE solvers,
 degree of ODEs, and the envelope forms
 """
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 
 
 def get_envelope(args):

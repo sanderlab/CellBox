@@ -1,5 +1,3 @@
--i https://pypi.org/simple
-git+https://github.com/sanderlab/CellBox.git@cell_systems_final#egg=cellbox&subdirectory=cellbox
 absl-py==0.9.0
 astor==0.8.1
 gast==0.2.2

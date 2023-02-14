@@ -4,10 +4,11 @@ CellBox, linear regression, Neural network, and co-expression
 """
 
 import numpy as np
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 import cellbox.kernel
 from cellbox.utils import loss, optimize
 # import tensorflow_probability as tfp
+tf.disable_v2_behavior()
 
 
 def factory(args):

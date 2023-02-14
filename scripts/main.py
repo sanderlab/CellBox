@@ -5,11 +5,11 @@ import cellbox
 import os
 import numpy as np
 import pandas as pd
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 import shutil
 import argparse
 import json
-
+tf.disable_v2_behavior()
 parser = argparse.ArgumentParser(description='CellBox main script')
 parser.add_argument('-config', '--experiment_config_path', required=True, type=str, help="Path of experiment config")
 parser.add_argument('-i', '--working_index', default=0, type=int)

@@ -7,10 +7,11 @@ import glob
 import time
 import numpy as np
 import pandas as pd
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 from tensorflow.compat.v1.errors import OutOfRangeError
 import cellbox
 from cellbox.utils import TimeLogger
+tf.disable_v2_behavior()
 
 
 def train_substage(model, sess, lr_val, l1_lambda, l2_lambda, n_epoch, n_iter, n_iter_buffer, n_iter_patience, args):
@@ -59,7 +60,7 @@ def train_substage(model, sess, lr_val, l1_lambda, l2_lambda, n_epoch, n_iter, n
         while True:
             if idx_iter > n_iter or n_unchanged > n_iter_patience:
                 break
-            t0 = time.clock()
+            t0 = time.perf_counter()
             try:
                 _, loss_train_i, loss_train_mse_i = sess.run(
                     (model.op_optimize, model.train_loss, model.train_mse_loss), feed_dict=args.feed_dicts['train_set'])
@@ -78,7 +79,7 @@ def train_substage(model, sess, lr_val, l1_lambda, l2_lambda, n_epoch, n_iter, n
                                                                               n_iter_patience))
             append_record("record_eval.csv",
                           [idx_epoch, idx_iter, loss_train_i, loss_valid_i, loss_train_mse_i,
-                           loss_valid_mse_i, None, time.clock() - t0])
+                           loss_valid_mse_i, None, time.perf_counter() - t0])
             # early stopping
             idx_iter += 1
             if new_loss < best_params.loss_min:
@@ -89,18 +90,18 @@ def train_substage(model, sess, lr_val, l1_lambda, l2_lambda, n_epoch, n_iter, n
                 n_unchanged += 1
 
     # Evaluation on valid set
-    t0 = time.clock()
+    t0 = time.perf_counter()
     sess.run(model.iter_eval.initializer, feed_dict=args.feed_dicts['valid_set'])
     loss_valid_i, loss_valid_mse_i = eval_model(sess, model.iter_eval, (model.eval_loss, model.eval_mse_loss),
                                                 args.feed_dicts['valid_set'], n_batches_eval=args.n_batches_eval)
-    append_record("record_eval.csv", [-1, None, None, loss_valid_i, None, loss_valid_mse_i, None, time.clock() - t0])
+    append_record("record_eval.csv", [-1, None, None, loss_valid_i, None, loss_valid_mse_i, None, time.perf_counter() - t0])
 
     # Evaluation on test set
-    t0 = time.clock()
+    t0 = time.perf_counter()
     sess.run(model.iter_eval.initializer, feed_dict=args.feed_dicts['test_set'])
     loss_test_mse = eval_model(sess, model.iter_eval, model.eval_mse_loss,
                                args.feed_dicts['test_set'], n_batches_eval=args.n_batches_eval)
-    append_record("record_eval.csv", [-1, None, None, None, None, None, loss_test_mse, time.clock() - t0])
+    append_record("record_eval.csv", [-1, None, None, None, None, None, loss_test_mse, time.perf_counter() - t0])
 
     best_params.save()
     args.logger.log("------------------ Substage {} finished!-------------------".format(substage_i))

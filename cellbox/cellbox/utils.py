@@ -5,9 +5,9 @@ the optimizer, the timer, and the md5 key for each configuration
 
 import time
 import hashlib
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 import json
-
+tf.disable_v2_behavior()
 
 def loss(x_gold, x_hat, W, l1=0, l2=0, weight=1.):
     """evaluate loss"""

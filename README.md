@@ -1,3 +1,7 @@
+<a target="_blank" href="https://colab.research.google.com/github/sanderlab/CellBox/blob/master/notebooks/cellbox_example_tf2.ipynb">
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+</a>
+
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/sanderlab/CellBox/9d13f3354f8b14bd896de6c8aa5db0b97c65ad12)
 
 # CellBox

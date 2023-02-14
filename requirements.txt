@@ -2,7 +2,7 @@ absl-py==1.4.0
 astor==0.8.1
 astunparse==1.6.3
 cachetools==5.3.0
-cellbox==0.3.1
+cellbox>=0.3.2
 charset-normalizer==3.0.1
 flatbuffers==23.1.21
 gast==0.4.0

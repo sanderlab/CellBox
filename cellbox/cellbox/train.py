@@ -10,17 +10,20 @@ import pandas as pd
 import tensorflow.compat.v1 as tf
 from tensorflow.compat.v1.errors import OutOfRangeError
 import cellbox
+from typing import Sequence, Any
 from cellbox.utils import TimeLogger
 tf.disable_v2_behavior()
 
 
-def train_substage(model, sess, lr_val, l1_lambda, l2_lambda, n_epoch, n_iter, n_iter_buffer, n_iter_patience, args):
+def train_substage(
+    model, sess, lr_val, l1_lambda, l2_lambda, n_epoch,
+    n_iter, n_iter_buffer, n_iter_patience, args) -> None:
     """
-    Training function that does one stage of training. The stage training can be repeated and modified to give better
-    training result.
+    Training function that does one stage of training. The stage training
+    can be repeated and modified to give better training result.
 
     Args:
-        model (CellBox): an CellBox instance
+        model (cellbox.model.PertBio): an CellBox instance
         sess (tf.Session): current session, need reinitialization for every nT
         lr_val (float): learning rate (read in from config file)
         l1_lambda (float): l1 regularization weight
@@ -29,7 +32,7 @@ def train_substage(model, sess, lr_val, l1_lambda, l2_lambda, n_epoch, n_iter, n
         n_iter (int): maximum number of iterations
         n_iter_buffer (int): training loss moving average window
         n_iter_patience (int): training loss tolerance
-        args: Args or configs
+        args (cellbox.config.Config): The model args.
     """
 
     stages = glob.glob("*best*.csv")
@@ -48,7 +51,8 @@ def train_substage(model, sess, lr_val, l1_lambda, l2_lambda, n_epoch, n_iter, n
             model.l1_lambda: l1_lambda,
             model.l2_lambda: l2_lambda
         })
-    args.logger.log("--------- lr: {}\tl1: {}\tl2: {}\t".format(lr_val, l1_lambda, l2_lambda))
+    args.logger.log("--------- lr: {}\tl1: {}\tl2: {}\t".format(
+        lr_val, l1_lambda, l2_lambda))
 
     sess.run(model.iter_monitor.initializer, feed_dict=args.feed_dicts['valid_set'])
     for idx_epoch in range(n_epoch):
@@ -63,16 +67,18 @@ def train_substage(model, sess, lr_val, l1_lambda, l2_lambda, n_epoch, n_iter, n
             t0 = time.perf_counter()
             try:
                 _, loss_train_i, loss_train_mse_i = sess.run(
-                    (model.op_optimize, model.train_loss, model.train_mse_loss), feed_dict=args.feed_dicts['train_set'])
+                    (model.op_optimize, model.train_loss, model.train_mse_loss),
+                    feed_dict=args.feed_dicts['train_set'])
             except OutOfRangeError:  # for iter_train
                 break
 
             # record training
             loss_valid_i, loss_valid_mse_i = sess.run(
-                (model.monitor_loss, model.monitor_mse_loss), feed_dict=args.feed_dicts['valid_set'])
+                (model.monitor_loss, model.monitor_mse_loss),
+                feed_dict=args.feed_dicts['valid_set'])
             new_loss = best_params.avg_n_iters_loss(loss_valid_i)
             if args.export_verbose > 0:
-                print(("Substage:{}\tEpoch:{}/{}\tIteration: {}/{}" + "\tloss (train):{:1.6f}\tloss (buffer on valid):"
+                print(("Substage:{}\tEpoch:{}/{}\tIteration: {}/{}" +"\tloss (train):{:1.6f}\tloss (buffer on valid):"
                        "{:1.6f}" + "\tbest:{:1.6f}\tTolerance: {}/{}").format(substage_i, idx_epoch, n_epoch, idx_iter,
                                                                               n_iter, loss_train_i, new_loss,
                                                                               best_params.loss_min, n_unchanged,
@@ -92,15 +98,17 @@ def train_substage(model, sess, lr_val, l1_lambda, l2_lambda, n_epoch, n_iter, n
     # Evaluation on valid set
     t0 = time.perf_counter()
     sess.run(model.iter_eval.initializer, feed_dict=args.feed_dicts['valid_set'])
-    loss_valid_i, loss_valid_mse_i = eval_model(sess, model.iter_eval, (model.eval_loss, model.eval_mse_loss),
-                                                args.feed_dicts['valid_set'], n_batches_eval=args.n_batches_eval)
+    loss_valid_i, loss_valid_mse_i = eval_model(
+        sess, model.iter_eval, (model.eval_loss, model.eval_mse_loss),
+        args.feed_dicts['valid_set'], n_batches_eval=args.n_batches_eval)
     append_record("record_eval.csv", [-1, None, None, loss_valid_i, None, loss_valid_mse_i, None, time.perf_counter() - t0])
 
     # Evaluation on test set
     t0 = time.perf_counter()
     sess.run(model.iter_eval.initializer, feed_dict=args.feed_dicts['test_set'])
-    loss_test_mse = eval_model(sess, model.iter_eval, model.eval_mse_loss,
-                               args.feed_dicts['test_set'], n_batches_eval=args.n_batches_eval)
+    loss_test_mse = eval_model(
+        sess, model.iter_eval, model.eval_mse_loss,
+        args.feed_dicts['test_set'], n_batches_eval=args.n_batches_eval)
     append_record("record_eval.csv", [-1, None, None, None, None, None, loss_test_mse, time.perf_counter() - t0])
 
     best_params.save()
@@ -108,16 +116,31 @@ def train_substage(model, sess, lr_val, l1_lambda, l2_lambda, n_epoch, n_iter, n
     save_model(args.saver, sess, './' + args.ckpt_name)
 
 
-def append_record(filename, contents):
-    """define function for appending training record"""
+def append_record(filename: str, contents: Sequence[Any]) -> None:
+    """Appends the contents to the log."""
     with open(filename, 'a') as f:
         for content in contents:
             f.write('{},'.format(content))
         f.write('\n')
 
 
-def eval_model(sess, eval_iter, obj_fn, eval_dict, return_avg=True, n_batches_eval=None):
-    """simulate the model for prediction"""
+def eval_model(
+    sess, eval_iter, obj_fn, eval_dict, return_avg=True,
+    n_batches_eval=None) -> np.ndarray:
+    """Uses a given model to make predictions.
+    
+    Args:
+        sess: The training session for tensorflow v1.
+        eval_iter: The data iterator used for evaluation.
+        obj_fn: The operator used to evaluate. 
+        eval_dict: The feed_dict used for sess.run().
+        return_avg: Whether to calculates an average of the evaluated tensor.
+        n_batches_eval: The max number of batches used for training. If None,
+            uses all the batches.
+
+    Returns:
+        The evaluated objective function.
+    """
     sess.run(eval_iter.initializer, feed_dict=eval_dict)
     counter = 0
     eval_results = []
@@ -134,13 +157,14 @@ def eval_model(sess, eval_iter, obj_fn, eval_dict, return_avg=True, n_batches_ev
     return np.vstack(eval_results)
 
 
-def train_model(model, args):
-    """Train the model"""
+def train_model(model, args) -> None:
+    """Trains the model given the model instance and args."""
     args.logger = TimeLogger(time_logger_step=1, hierachy=2)
 
     # Check if all variables in scope
     # TODO: put variables under appropriate scopes
-    for i in tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.GLOBAL_VARIABLES, scope='initialization'):
+    for i in tf.compat.v1.get_collection(
+        tf.compat.v1.GraphKeys.GLOBAL_VARIABLES, scope='initialization'):
         print(i)
 
     # Initialization
@@ -175,16 +199,23 @@ def train_model(model, args):
     tf.compat.v1.reset_default_graph()
 
 
-def save_model(saver, sess, path):
-    """save model"""
+def save_model(saver, sess, path) -> None:
+    """Saves the model and session to a given filepath."""
     # Save the variables to disk.
     tmp = saver.save(sess, path)
     print("Model saved in path: %s" % tmp)
 
 
 class Screenshot(dict):
-    """summarize the model"""
+    """The class that tracks the model metadata."""
+
     def __init__(self, args, n_iter_buffer):
+        """Creates the instance and initialize the variables.
+        
+        Args:
+            args (cellbox.config.Config): The model args.
+            n_iter_buffer (int): The moving average window for model losses. 
+        """
         # initialize loss_min
         super().__init__()
         self.loss_min = 1000
@@ -197,14 +228,23 @@ class Screenshot(dict):
         self.substage_i = []
         self.export_verbose = args.export_verbose
 
-    def avg_n_iters_loss(self, new_loss):
-        """average the last few losses"""
+    def avg_n_iters_loss(self, new_loss: float) -> float:
+        """Averages the last few losses"""
         self.saved_losses = self.saved_losses + [new_loss]
         self.saved_losses = self.saved_losses[-self.n_iter_buffer:]
         return sum(self.saved_losses) / len(self.saved_losses)
 
     def screenshot(self, sess, model, substage_i, node_index, loss_min, args):
-        """evaluate models"""
+        """Evaluates the model performance and updates the summary files and best config.
+        
+        Args:
+            sess (tf.Session): The session for tensorflow v1.
+            model (cellbox.models.PertBio): The instance for the model.
+            substage_i (int): The index for the training substage.
+            node_index (pandas.DataFrame): A dataframe of node indices.
+            loss_min (int): The best loss so far.
+            args (cellbox.config.Config): The model args.
+        """
         self.substage_i = substage_i
         self.loss_min = loss_min
         # Save the variables to disk.
@@ -244,7 +284,7 @@ class Screenshot(dict):
                 pass
 
     def save(self):
-        """save model parameters"""
+        """Exports the best model metadata to a CSV file."""
         for file in glob.glob(str(self.substage_i) + "_best.*.csv"):
             os.remove(file)
         for key in self:

@@ -7,12 +7,11 @@ import numpy as np
 import tensorflow.compat.v1 as tf
 import cellbox.kernel
 from cellbox.utils import loss, optimize
-# import tensorflow_probability as tfp
 tf.disable_v2_behavior()
 
 
 def factory(args):
-    """define model type based on configuration input"""
+    """Defines the model given the model args."""
     if args.model == 'CellBox':
         return CellBox(args).build()
     # Deprecated for now, use scikit-learn instead
@@ -31,8 +30,8 @@ def factory(args):
 
 
 class PertBio:
-    """define abstract perturbation model"""
-    def __init__(self, args):
+    """Defines the abstract perturbation model."""
+    def __init__(self, args) -> None:
         self.args = args
         self.n_x = args.n_x
         self.pert_in, self.expr_out = args.pert_in, args.expr_out
@@ -43,8 +42,8 @@ class PertBio:
         self.l1_lambda, self.l2_lambda = self.args.l1_lambda_placeholder, self.args.l2_lambda_placeholder
         self.lr = self.args.lr
 
-    def get_ops(self):
-        """get operators for tensorflow"""
+    def get_ops(self) -> None:
+        """Gets operators for tensorflow."""
         if self.args.weight_loss == 'expr':
             self.train_loss, self.train_mse_loss = loss(self.train_y, self.train_yhat, self.params['W'],
                                                         self.l1_lambda, self.l2_lambda, weight=self.train_y)

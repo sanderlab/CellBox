@@ -10,4 +10,3 @@ from cellbox.utils import *
 from cellbox.version import __version__, VERSION, get_msg
 
 get_msg()
-#

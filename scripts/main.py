@@ -18,12 +18,14 @@ master_args = parser.parse_args()
 
 
 def set_seed(in_seed):
+    """Sets random seeds for numpy and tensorflow."""
     int_seed = int(in_seed)
     tf.compat.v1.set_random_seed(int_seed)
     np.random.seed(int_seed)
 
 
 def prepare_workdir(in_cfg):
+    """Creates the working directory for each experiment and generates necessary files."""
     # Read Data
     in_cfg.root_dir = os.getcwd()
     in_cfg.node_index = pd.read_csv(in_cfg.node_index_file, header=None, names=None) \

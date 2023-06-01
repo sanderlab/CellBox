@@ -4,11 +4,18 @@ degree of ODEs, and the envelope forms
 """
 
 import tensorflow.compat.v1 as tf
+from typing import Callable, Mapping, Any
 tf.disable_v2_behavior()
 
 
-def get_envelope(args):
-    """get the envelope form based on the given argument"""
+def get_envelope(args) -> Callable[[tf.Tensor], tf.Tensor]:
+    """Gets the envelope form based on the given argument.
+    
+    Returns:
+        A function that takes in a tensor and returns a tensor with the same shape.
+            This function should apply a specific transformation such as the Hill's
+            equation.
+    """
     if args.envelope_form == 'tanh':
         args.envelope_fn = tf.tanh
     elif args.envelope_form == 'polynomial':
@@ -31,8 +38,15 @@ def get_envelope(args):
     return args.envelope_fn
 
 
-def get_dxdt(args, params):
-    """calculate the derivatives dx/dt in the ODEs"""
+def get_dxdt(
+    args, params: Mapping[str, tf.Tensor]) -> Callable[[tf.Tensor], tf.Tensor]:
+    """Calculates the derivatives dx/dt in the ODEs.
+    
+    Returns:
+        A function that takes in a tensor and returns a tensor with the same shape.
+            This function should apply an envelope function with given params, i.e.,
+            f(params, x).
+    """
     if args.ode_degree == 1:
         def weighted_sum(x):
             return tf.matmul(params['W'], x)
@@ -55,8 +69,8 @@ def get_dxdt(args, params):
     raise Exception("Illegal envelope type. Choose from [0,1,2].")
 
 
-def get_ode_solver(args):
-    """get the ODE solver based on the given argument"""
+def get_ode_solver(args) -> Callable[Any, tf.Tensor]:
+    """Gets the ODE solver based on the given argument."""
     if args.ode_solver == 'heun':
         return heun_solver
     if args.ode_solver == 'euler':
@@ -68,7 +82,7 @@ def get_ode_solver(args):
     raise Exception("Illegal ODE solver. Use [heun, euler, rk4, midpoint]")
 
 
-def heun_solver(x, t_mu, dT, n_T, _dXdt, n_activity_nodes=None):
+def heun_solver(x, t_mu, dT, n_T, _dXdt, n_activity_nodes=None) -> tf.Tensor:
     """Heun's ODE solver"""
     xs = []
     n_x = t_mu.shape[0]
@@ -83,7 +97,7 @@ def heun_solver(x, t_mu, dT, n_T, _dXdt, n_activity_nodes=None):
     return xs
 
 
-def euler_solver(x, t_mu, dT, n_T, _dXdt, n_activity_nodes=None):
+def euler_solver(x, t_mu, dT, n_T, _dXdt, n_activity_nodes=None) -> tf.Tensor:
     """Euler's method"""
     xs = []
     n_x = t_mu.shape[0]
@@ -97,7 +111,7 @@ def euler_solver(x, t_mu, dT, n_T, _dXdt, n_activity_nodes=None):
     return xs
 
 
-def midpoint_solver(x, t_mu, dT, n_T, _dXdt, n_activity_nodes=None):
+def midpoint_solver(x, t_mu, dT, n_T, _dXdt, n_activity_nodes=None) -> tf.Tensor:
     """Midpoint method"""
     xs = []
     n_x = t_mu.shape[0]
@@ -112,7 +126,7 @@ def midpoint_solver(x, t_mu, dT, n_T, _dXdt, n_activity_nodes=None):
     return xs
 
 
-def rk4_solver(x, t_mu, dT, n_T, _dXdt, n_activity_nodes=None):
+def rk4_solver(x, t_mu, dT, n_T, _dXdt, n_activity_nodes=None) -> tf.Tensor:
     """Runge-Kutta method"""
     xs = []
     n_x = t_mu.shape[0]

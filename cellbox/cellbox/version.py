@@ -4,11 +4,14 @@ This module defines the version of the package
 
 __version__ = '0.3.2'
 VERSION = __version__
+# TODO(desmondyuan): update 0.3.3
+# * new function docstrings
+# * remove the binder implementation
+# * add basic tests
 
+def get_msg() -> None:
+    """Print the version history."""
 
-def get_msg():
-    """get version history"""
-    # for test: installation completed
     changelog = [
         """
         version 0.0.2

@@ -8,12 +8,23 @@ import os
 import numpy as np
 import pandas as pd
 import tensorflow.compat.v1 as tf
+from typing import Mapping, Any
 from scipy import sparse
 tf.disable_v2_behavior()
 
 
 def factory(cfg):
-    """formulate training dataset"""
+    """Formulates the training dataset.
+    
+    This factory conducts the following three steps of data processing.
+        (1) Create variable placeholders for the perturbation and expression
+            vectors (input and output).
+        (2) [Optional] Add noise to the loaded data. This was used for
+            corruption analyses.
+        (3) Data partitioning given cellbox.config.Config.experiment_type. 
+            The results are in the form of a dictionary.
+        (4) Creates a feeding dictionary for the session call.
+    """
     # Prepare data
     if cfg.sparse_data:
         cfg.pert_in = tf.compat.v1.sparse.placeholder(tf.float32, [None, cfg.n_x], name='pert_in')
@@ -31,7 +42,7 @@ def factory(cfg):
         lambda x: pad_and_realign(x, max_combo_degree, cfg.n_activity_nodes - 1)
     ).tolist())
 
-    # add noise
+    # Add noise
     if cfg.add_noise_level > 0:
         np.random.seed(cfg.seed)
         assert not cfg.sparse_data, "Adding noise to sparse data format is yet to be supported"
@@ -73,13 +84,15 @@ def factory(cfg):
     return cfg
 
 
-def pad_and_realign(x, length, idx_shift=0):
+def pad_and_realign(x: tf.Tensor, length: int, idx_shift: int=0) -> tf.Tensor:
+    """Add zeros to the given tensor of perturbation indices."""
     x -= idx_shift
     padded = np.pad(x, (0, length - len(x)), 'constant')
     return padded
 
 
-def get_tensors(cfg):
+def get_tensors(cfg) -> None:
+    """Gets the dataset iterators and regularization placeholders."""
     # prepare training placeholders
     cfg.l1_lambda_placeholder = tf.compat.v1.placeholder(tf.float32, name='l1_lambda')
     cfg.l2_lambda_placeholder = tf.compat.v1.placeholder(tf.float32, name='l2_lambda')
@@ -95,8 +108,8 @@ def get_tensors(cfg):
     return cfg
 
 
-def s2c(cfg):
-    """data parition for single-to-combo experiments"""
+def s2c(cfg) -> Mapping[str, Any]:
+    """Data parition for single-to-combo experiments"""
     double_idx = cfg.loo.all(axis=1)
     testidx = double_idx
 
@@ -135,7 +148,7 @@ def s2c(cfg):
     return dataset
 
 
-def loo(cfg, singles):
+def loo(cfg, singles) -> Mapping[str, Any]:
     """data parition for leave-one-drug-out experiments"""
     drug_index = int(cfg.drug_index)
     double_idx = cfg.loo.all(axis=1)
@@ -181,7 +194,7 @@ def loo(cfg, singles):
     return dataset
 
 
-def random_partition(cfg):
+def random_partition(cfg) -> Mapping[str, Any]:
     """random dataset partition"""
     nexp, _ = cfg.pert.shape
     nvalid = int(nexp * cfg.trainset_ratio)
@@ -222,7 +235,7 @@ def random_partition(cfg):
     return dataset
 
 
-def random_partition_with_replicates(cfg):
+def random_partition_with_replicates(cfg) -> Mapping[str, Any]:
     """random dataset partition"""
     nexp = len(np.unique(cfg.loo, axis=0))
     nvalid = int(nexp * cfg.trainset_ratio)
@@ -268,9 +281,9 @@ def random_partition_with_replicates(cfg):
     return dataset
 
 
-
 def sparse_to_feedable_arrays(npz):
-    """convert sparse matrix to arrays"""
+    """Converts sparse matrices to full arrays."""
+    # Not currently in use.
     coo = npz.tocoo()
     indices = [[i, j] for i, j in zip(coo.row, coo.col)]
     values = coo.data

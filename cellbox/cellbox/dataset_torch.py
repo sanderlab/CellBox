@@ -7,25 +7,31 @@ and random partition of the dataset.
 import os
 import numpy as np
 import pandas as pd
-import tensorflow.compat.v1 as tf
+import torch
+import torch.nn as nn
+
+from torch.utils.data import TensorDataset
+from torch.utils.data import DataLoader
+
 from scipy import sparse
-tf.disable_v2_behavior()
+
 
 
 def factory(cfg):
     """formulate training dataset"""
     # Prepare data
-    print("Hello!")
+    # To replace cfg.pert_in and cfg.expr_out, should it take the full pert and expr datasets?
     if cfg.sparse_data:
-        cfg.pert_in = tf.compat.v1.sparse.placeholder(tf.float32, [None, cfg.n_x], name='pert_in')
-        cfg.expr_out = tf.compat.v1.sparse.placeholder(tf.float32, [None, cfg.n_x], name='expr_out')
+        #cfg.pert_in = tf.compat.v1.sparse.placeholder(tf.float32, [None, cfg.n_x], name='pert_in')
+        #cfg.expr_out = tf.compat.v1.sparse.placeholder(tf.float32, [None, cfg.n_x], name='expr_out')
         cfg.pert = sparse.load_npz(os.path.join(cfg.root_dir, cfg.pert_file))
         cfg.expr = sparse.load_npz(os.path.join(cfg.root_dir, cfg.expr_file))
     else:
-        cfg.pert_in = tf.compat.v1.placeholder(tf.float32, [None, cfg.n_x], name='pert_in')
-        cfg.expr_out = tf.compat.v1.placeholder(tf.float32, [None, cfg.n_x], name='expr_out')
+        #cfg.pert_in = tf.compat.v1.placeholder(tf.float32, [None, cfg.n_x], name='pert_in')
+        #cfg.expr_out = tf.compat.v1.placeholder(tf.float32, [None, cfg.n_x], name='expr_out')
         cfg.pert = pd.read_csv(os.path.join(cfg.root_dir, cfg.pert_file), header=None, dtype=np.float32)
         cfg.expr = pd.read_csv(os.path.join(cfg.root_dir, cfg.expr_file), header=None, dtype=np.float32)
+    
     group_df = pd.DataFrame(np.where(cfg.pert != 0), index=['row_id', 'pert_idx']).T.groupby('row_id')
     max_combo_degree = group_df.pert_idx.count().max()
     cfg.loo = pd.DataFrame(group_df.pert_idx.apply(
@@ -37,8 +43,6 @@ def factory(cfg):
         np.random.seed(cfg.seed)
         assert not cfg.sparse_data, "Adding noise to sparse data format is yet to be supported"
         cfg.expr.iloc[:] = cfg.expr.values + np.random.normal(loc=0, scale=cfg.add_noise_level, size=cfg.expr.shape)
-
-    cfg = get_tensors(cfg)
 
     # Data partition
     if cfg.experiment_type == 'random partition' or cfg.experiment_type == 'full data':
@@ -57,20 +61,22 @@ def factory(cfg):
         cfg.dataset = random_partition_with_replicates(cfg)
 
     # Prepare feed_dicts
-    cfg.feed_dicts = {
-        'train_set': {
-            cfg.pert_in: cfg.dataset['pert_train'],
-            cfg.expr_out: cfg.dataset['expr_train'],
-        },
-        'valid_set': {
-            cfg.pert_in: cfg.dataset['pert_valid'],
-            cfg.expr_out: cfg.dataset['expr_valid'],
-        },
-        'test_set': {
-            cfg.pert_in: cfg.dataset['pert_test'],
-            cfg.expr_out: cfg.dataset['expr_test']
-        }
-    }
+    #cfg.feed_dicts = {
+    #    'train_set': {
+    #        cfg.pert_in: cfg.dataset['pert_train'],
+    #        cfg.expr_out: cfg.dataset['expr_train'],
+    #    },
+    #    'valid_set': {
+    #        cfg.pert_in: cfg.dataset['pert_valid'],
+    #        cfg.expr_out: cfg.dataset['expr_valid'],
+    #    },
+    #    'test_set': {
+    #        cfg.pert_in: cfg.dataset['pert_test'],
+    #        cfg.expr_out: cfg.dataset['expr_test']
+    #    }
+    #}
+    cfg = get_tensors(cfg)
+
     return cfg
 
 
@@ -82,17 +88,40 @@ def pad_and_realign(x, length, idx_shift=0):
 
 def get_tensors(cfg):
     # prepare training placeholders
-    cfg.l1_lambda_placeholder = tf.compat.v1.placeholder(tf.float32, name='l1_lambda')
-    cfg.l2_lambda_placeholder = tf.compat.v1.placeholder(tf.float32, name='l2_lambda')
-    cfg.lr = tf.compat.v1.placeholder(tf.float32, name='lr')
+    #cfg.l1_lambda_placeholder = tf.compat.v1.placeholder(tf.float32, name='l1_lambda')
+    #cfg.l2_lambda_placeholder = tf.compat.v1.placeholder(tf.float32, name='l2_lambda')
+    #cfg.lr = tf.compat.v1.placeholder(tf.float32, name='lr')
+    cfg.l1_lambda_placeholder = 0.0
+    cfg.l2_lambda_placeholder = 0.0
+    cfg.lr = 0.0
 
-    # Prepare dataset iterators
-    dataset = tf.data.Dataset.from_tensor_slices((cfg.pert_in, cfg.expr_out))
-    cfg.iter_train = tf.compat.v1.data.make_initializable_iterator(
-        dataset.shuffle(buffer_size=1024, reshuffle_each_iteration=True).batch(cfg.batchsize))
-    cfg.iter_monitor = tf.compat.v1.data.make_initializable_iterator(
-        dataset.repeat().shuffle(buffer_size=1024, reshuffle_each_iteration=True).batch(cfg.batchsize))
-    cfg.iter_eval = tf.compat.v1.data.make_initializable_iterator(dataset.batch(cfg.batchsize))
+    # Prepare dataset iterators (these can be replaced with DataLoader)
+    #dataset = tf.data.Dataset.from_tensor_slices((cfg.pert_in, cfg.expr_out))
+    #cfg.iter_train = tf.compat.v1.data.make_initializable_iterator(
+    #    dataset.shuffle(buffer_size=1024, reshuffle_each_iteration=True).batch(cfg.batchsize))
+    #cfg.iter_monitor = tf.compat.v1.data.make_initializable_iterator(
+    #    dataset.repeat().shuffle(buffer_size=1024, reshuffle_each_iteration=True).batch(cfg.batchsize))
+    #cfg.iter_eval = tf.compat.v1.data.make_initializable_iterator(dataset.batch(cfg.batchsize))
+    train_dataset = TensorDataset(
+        torch.from_numpy(cfg.dataset["pert_train"]), torch.from_numpy(cfg.dataset["expr_train"])
+    )
+    val_dataset = TensorDataset(
+        torch.from_numpy(cfg.dataset["pert_valid"]), torch.from_numpy(cfg.dataset["expr_valid"])
+    )
+    test_dataset = TensorDataset(
+        torch.from_numpy(cfg.dataset["pert_test"]), torch.from_numpy(cfg.dataset["expr_test"])
+    )
+
+    cfg.iter_train = DataLoader(
+        train_dataset, batch_size=cfg.batchsize, shuffle=True
+    )
+    cfg.iter_monitor = DataLoader(
+        val_dataset, batch_size=cfg.batchsize, shuffle=True
+    )
+    cfg.iter_eval = DataLoader(
+        test_dataset, batch_size=cfg.batchsize, shuffle=True
+    )
+
     return cfg
 
 
@@ -127,10 +156,10 @@ def s2c(cfg):
         dataset.update({
             "pert_train": cfg.pert[~testidx].iloc[valid_pos[:ntrain], :].values,
             "pert_valid": cfg.pert[~testidx].iloc[valid_pos[ntrain:], :].values,
-            "pert_test": cfg.pert[testidx],
+            "pert_test": cfg.pert[testidx].values,
             "expr_train": cfg.expr[~testidx].iloc[valid_pos[:ntrain], :].values,
             "expr_valid": cfg.expr[~testidx].iloc[valid_pos[ntrain:], :].values,
-            "expr_test": cfg.expr[testidx]
+            "expr_test": cfg.expr[testidx].values
         })
 
     return dataset
@@ -139,13 +168,13 @@ def s2c(cfg):
 def loo(cfg, singles):
     """data parition for leave-one-drug-out experiments"""
     drug_index = int(cfg.drug_index)
-    double_idx = cfg.loo.all(axis=1)        # Pick out non-zero rows
+    double_idx = cfg.loo.all(axis=1)
 
-    testidx = (cfg.loo == drug_index).any(axis=1)       # Pick out rows that have the drug index
+    testidx = (cfg.loo == drug_index).any(axis=1)
 
     if singles:
         testidx = pd.concat([testidx, double_idx], axis=1)
-        testidx = testidx.all(axis=1)       # Pick out rows that are both non-zero and have the drug index
+        testidx = testidx.all(axis=1)
 
     nexp, _ = cfg.pert.shape
     nvalid = nexp - sum(testidx)
@@ -173,10 +202,10 @@ def loo(cfg, singles):
         dataset.update({
             "pert_train": cfg.pert[~testidx].iloc[valid_pos[:ntrain], :].values,
             "pert_valid": cfg.pert[~testidx].iloc[valid_pos[ntrain:], :].values,
-            "pert_test": cfg.pert[testidx],
+            "pert_test": cfg.pert[testidx].values,
             "expr_train": cfg.expr[~testidx].iloc[valid_pos[:ntrain], :].values,
             "expr_valid": cfg.expr[~testidx].iloc[valid_pos[ntrain:], :].values,
-            "expr_test": cfg.expr[testidx]
+            "expr_test": cfg.expr[testidx].values
         })
 
     return dataset

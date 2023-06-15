@@ -15,7 +15,6 @@ tf.disable_v2_behavior()
 def factory(cfg):
     """formulate training dataset"""
     # Prepare data
-    print("Hello!")
     if cfg.sparse_data:
         cfg.pert_in = tf.compat.v1.sparse.placeholder(tf.float32, [None, cfg.n_x], name='pert_in')
         cfg.expr_out = tf.compat.v1.sparse.placeholder(tf.float32, [None, cfg.n_x], name='expr_out')

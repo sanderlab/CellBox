@@ -56,19 +56,18 @@ def prepare_workdir(in_cfg, working_index, md5):
     return 0
 
 
-def get_dataloader(experiment_config_path, tensorflow_code=True):
+def get_dataloader(experiment_config_path, tensorflow_code=True, drug_index=None):
     """
     Get either the Tensorflow or Pytorch dataloader
     """
-    experiment_config_path = "/users/ngun7t/Documents/cellbox-jun-6/configs_dev/Example.single_to_combo.json"
     working_index = 0
     cfg = cellbox.config.Config(experiment_config_path)
+    cfg.drug_index = drug_index
     cfg.ckpt_path_full = os.path.join('./', cfg.ckpt_name)
     md5 = cellbox.utils.md5(cfg)
-    cfg.drug_index = 5         # Change this for testing purposes
     cfg.seed = working_index + cfg.seed if hasattr(cfg, "seed") else working_index + 1000
     set_seed(cfg.seed)
-    print(vars(cfg))
+    #print(vars(cfg))
 
     prepare_workdir(cfg, working_index, md5)
     logger = cellbox.utils.TimeLogger(time_logger_step=1, hierachy=3)
@@ -99,7 +98,7 @@ def get_dataloader(experiment_config_path, tensorflow_code=True):
         #model = cellbox.model.factory(args)
         dataloader_list.append(data_dict)
 
-    return dataloader_list
+    return dataloader_list, cfg
 
 
 def yield_data_from_tensorflow_dataloader(dataloader, feed_dict):
@@ -148,3 +147,35 @@ def s2c_row_inds(loo_label_dir):
     rows_with_single_drugs = loo_label.index[(loo_label[[0, 1]] == 0).any(axis=1)].tolist()
     rows_with_multiple_drugs = list(set(list(range(loo_label.shape[0]))) - set(rows_with_single_drugs))
     return rows_with_single_drugs, rows_with_multiple_drugs
+
+
+def loo_row_inds(loo_label_dir, cfg):
+    """
+    Identify the rows of the dataset that leaves out one specific drug
+    There is some complication in this function, check https://github.com/sanderlab/CellBox/issues/48
+    """
+    drug_indices_map = []
+    for drug_index in range(14):
+        double_idx = cfg.loo.all(axis=1)
+        testidx = (cfg.loo == drug_index).any(axis=1)
+
+        if cfg.experiment_type == 'leave one out (w/o single)':
+            singles = False
+        elif cfg.experiment_type == 'leave one out (w/ single)':
+            singles = True
+
+        if singles:
+            testidx = pd.concat([testidx, double_idx], axis=1)
+            testidx = testidx.all(axis=1)
+
+        loo_label = pd.read_csv(loo_label_dir, header=None)[testidx]
+        for i in range(14):
+            if (loo_label == i).any(axis=1).all():
+                drug_indices_map.append(i)
+                break
+        
+    print(f"Drug indices map: {drug_indices_map}")
+    true_drug_index = drug_indices_map[cfg.drug_index]
+    loo_label = pd.read_csv(loo_label_dir, header=None)
+    ind_rows = loo_label.index[(loo_label[[0, 1]] == true_drug_index).any(axis=1)].tolist()
+    return np.array(ind_rows)

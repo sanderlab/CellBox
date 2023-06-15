@@ -137,3 +137,14 @@ def yield_data_from_pytorch_dataloader(dataloader):
         items_pert.append(pert)
         items_expr.append(expr)
     return items_pert, items_expr
+
+
+def s2c_row_inds(loo_label_dir):
+    """
+    Identify the rows of the dataset that only has one drug.
+    The information is stored in the loo_label file
+    """
+    loo_label = pd.read_csv(loo_label_dir, header=None)
+    rows_with_single_drugs = loo_label.index[(loo_label[[0, 1]] == 0).any(axis=1)].tolist()
+    rows_with_multiple_drugs = list(set(list(range(loo_label.shape[0]))) - set(rows_with_single_drugs))
+    return rows_with_single_drugs, rows_with_multiple_drugs

@@ -107,6 +107,9 @@ venv.bak/
 # results
 results/
 configs/*/grid_search
+configs_dev/
+bash_scripts/
+logs/
 
 # Pycharm
 .idea

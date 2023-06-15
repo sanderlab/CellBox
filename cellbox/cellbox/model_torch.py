@@ -7,16 +7,16 @@ from cellbox.utils import loss, optimize
 
 def factory(args):
     """define model type based on configuration input"""
-    if args.model == 'CellBox':
-        return CellBox(args).build()
+    #if args.model == 'CellBox':
+    #    return CellBox(args).build()
     # Deprecated for now, use scikit-learn instead
     # TODO: update the co-expression models
     # if args.model == 'CoExp':
     #     return CoExp(args).build()
     # if args.model == 'CoExp_nonlinear':
     #     return CoExpNonlinear(args).build()
-    #if args.model == 'LinReg':
-    #    return LinReg(args).build()
+    if args.model == 'LinReg':
+        return LinReg(args)
     #if args.model == 'NN':
     #    return NN(args).build()
     # TODO: baysian model
@@ -40,21 +40,23 @@ class PertBio(nn.Module):
 
     def get_ops(self):
         """get operators for tensorflow"""
-        if self.args.weight_loss == 'expr':
-            self.train_loss, self.train_mse_loss = loss(self.train_y, self.train_yhat, self.params['W'],
-                                                        self.l1_lambda, self.l2_lambda, weight=self.train_y)
-            self.monitor_loss, self.monitor_mse_loss = loss(self.monitor_y, self.monitor_yhat, self.params['W'],
-                                                            self.l1_lambda, self.l2_lambda, weight=self.monitor_y)
-            self.eval_loss, self.eval_mse_loss = loss(self.eval_y, self.eval_yhat, self.params['W'],
-                                                      self.l1_lambda, self.l2_lambda, weight=self.eval_y)
-        elif self.args.weight_loss == 'None':
-            self.train_loss, self.train_mse_loss = loss(self.train_y, self.train_yhat, self.params['W'],
-                                                        self.l1_lambda, self.l2_lambda)
-            self.monitor_loss, self.monitor_mse_loss = loss(self.monitor_y, self.monitor_yhat, self.params['W'],
-                                                            self.l1_lambda, self.l2_lambda)
-            self.eval_loss, self.eval_mse_loss = loss(self.eval_y, self.eval_yhat, self.params['W'],
-                                                      self.l1_lambda, self.l2_lambda)
-        self.op_optimize = optimize(self.train_loss, self.lr)
+        # Do we need this at all for Pytorch?
+        pass
+        #if self.args.weight_loss == 'expr':
+        #    self.train_loss, self.train_mse_loss = loss(self.train_y, self.train_yhat, self.params['W'],
+        #                                                self.l1_lambda, self.l2_lambda, weight=self.train_y)
+        #    self.monitor_loss, self.monitor_mse_loss = loss(self.monitor_y, self.monitor_yhat, self.params['W'],
+        #                                                    self.l1_lambda, self.l2_lambda, weight=self.monitor_y)
+        #    self.eval_loss, self.eval_mse_loss = loss(self.eval_y, self.eval_yhat, self.params['W'],
+        #                                              self.l1_lambda, self.l2_lambda, weight=self.eval_y)
+        #elif self.args.weight_loss == 'None':
+        #    self.train_loss, self.train_mse_loss = loss(self.train_y, self.train_yhat, self.params['W'],
+        #                                                self.l1_lambda, self.l2_lambda)
+        #    self.monitor_loss, self.monitor_mse_loss = loss(self.monitor_y, self.monitor_yhat, self.params['W'],
+        #                                                    self.l1_lambda, self.l2_lambda)
+        #    self.eval_loss, self.eval_mse_loss = loss(self.eval_y, self.eval_yhat, self.params['W'],
+        #                                              self.l1_lambda, self.l2_lambda)
+        #self.op_optimize = optimize(self.train_loss, self.lr)
 
     def get_variables(self):
         """get model parameters (overwritten by model configuration)"""
@@ -64,15 +66,16 @@ class PertBio(nn.Module):
         """forward propagation (overwritten by model configuration)"""
         raise NotImplementedError
 
-    def build(self):
-        """build model"""
-        self.params = {}
-        self.get_variables()
-        self.train_yhat = self.forward(self.train_y0, self.train_x)
-        self.monitor_yhat = self.forward(self.monitor_y0, self.monitor_x)
-        self.eval_yhat = self.forward(self.eval_y0, self.train_x)
-        self.get_ops()
-        return self
+    #def build(self):
+    #    """build model"""
+    #    # Do we need this at all for Pytorch?
+    #    self.params = {}
+    #    self.get_variables()
+    #    self.train_yhat = self.forward(self.train_y0, self.train_x)
+    #    self.monitor_yhat = self.forward(self.monitor_y0, self.monitor_x)
+    #    self.eval_yhat = self.forward(self.eval_y0, self.train_x)
+    #    self.get_ops()
+    #    return self
     
 
 class LinReg(PertBio):

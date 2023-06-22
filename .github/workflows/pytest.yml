@@ -1,6 +1,14 @@
 name: pytest
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+      - add-pytorch-dataloader-test
+  pull_request:
+    branches:
+      - master
+      - add-pytorch-dataloader-test
 
 jobs:
   build:

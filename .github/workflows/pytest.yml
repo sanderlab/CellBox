@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        python-version: ["3.7.17"]
+        python-version: ["3.6.7"]
 
     steps:
       - uses: actions/checkout@v3
@@ -28,19 +28,19 @@ jobs:
         run: |
           # Install main dependencies
           python -m pip install --upgrade pip
-          pip install ruff pytest
+          pip install pytest # ruff only works with >3.7
           
           # Install CellBox from current repo
           pip install -e cellbox
           
           # Other dependencies
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-      - name: Lint with ruff
+      - name: Lint with ruff (only Python 3.7+)
         run: |
           # stop the build if there are Python syntax errors or undefined names
-          ruff --format=github --select=E9,F63,F7,F82 --target-version=py37 .
+          #ruff --format=github --select=E9,F63,F7,F82 --target-version=py37 .
           # default set of ruff rules with GitHub Annotations
-          ruff --format=github --target-version=py37 .
+          #ruff --format=github --target-version=py37 .
       - name: Test with pytest
         run: |
           pytest test.py

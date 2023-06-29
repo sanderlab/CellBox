@@ -4,12 +4,12 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 # import ``__version__`` from code base
-from cellbox.version import __version__
+#from cellbox.version import __version__
 exec(open('cellbox/version.py').read())
 
 setuptools.setup(
     name="cellbox",
-    version=__version__,
+    version='0.3.2',
     author="Bo Yuan, Judy Shen, Augustin Luna",
     author_email="boyuan@g.harvard.edu, c_shen@g.harvard.edu, augustin_luna@hms.harvard.edu",
     description="A mechine learning framework with a mathematical core of differential equations to train network models on perturbation-response data",

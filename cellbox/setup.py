@@ -4,6 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 # import ``__version__`` from code base
+from cellbox.version import __version__
 exec(open('cellbox/version.py').read())
 
 setuptools.setup(

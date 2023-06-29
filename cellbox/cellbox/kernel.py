@@ -69,7 +69,8 @@ def get_dxdt(
     raise Exception("Illegal envelope type. Choose from [0,1,2].")
 
 
-def get_ode_solver(args) -> Callable[Any, tf.Tensor]:
+#def get_ode_solver(args) -> Callable[Any, tf.Tensor]:
+def get_ode_solver(args):
     """Gets the ODE solver based on the given argument."""
     if args.ode_solver == 'heun':
         return heun_solver

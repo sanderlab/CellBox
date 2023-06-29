@@ -5,10 +5,12 @@ on:
     branches:
       - master
       - add-pytorch-dataloader-test
+      - test-github-actions
   pull_request:
     branches:
       - master
       - add-pytorch-dataloader-test
+      - test-github-actions
 
 jobs:
   build:

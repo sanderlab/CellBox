@@ -44,13 +44,23 @@ Alternatively, in project folder, do the same command
 # Installation
 
 ## Install using pip 
-The following command will install cellbox from a particular branch using the '@' notation:
+Before installing CellBox, it is good practice to create a Python virtual environment. With conda, `conda create -n “cellbox” python==3.8.0` creates a conda environment with the name `cellbox` and Python 3.8.0. Activate the environment by `conda activate cellbox`. 
+
+To install CellBox to a particular folder, type the following:
+
+```
+git clone https://github.com/sanderlab/CellBox.git <folder_name>
+cd /<folder_name>/cellbox
+pip install .
+```
+
+If you only want to install CellBox from a particular branch, the following command will install cellbox from a particular branch using the '@' notation:
 
 ```
 pip install git+https://github.com/dfci/CellBox.git@cell_systems_final#egg=cellbox\&subdirectory=cellbox
 ```
 
-## Install using setup.py
+## Install using setup.py (setup.py install has been deprecated in newer Python versions)
 Clone repository and in the `cellbox` folder run:
 
 ```
@@ -69,23 +79,27 @@ cellbox.VERSION
 # Project Structure
 
 ## Data files: in ./data/ folder in GitHub repo used for example
-* `node_index.txt`: names of each protein/phenotypic node.
-* `expr_index.txt`: information each perturbation condition. This is one of the original data files we downloaded from [paper](https://elifesciences.org/articles/04640) and is only used here as a reference for the condition names. In other words the 2nd and 3rd columns are not being used in CellBox. See `loo_label.csv` for the actual indexing of perturbation targets.
+These data files are used for generating the results from the official CellBox paper. Replace these files with your own data.
+* `node_index.csv`: names of each protein/phenotypic node.
+* `expr_index.txt`: information each perturbation condition. This is one of the original data files we downloaded from [paper](https://elifesciences.org/articles/04640) and is only used here as a reference for the condition names. In other words the 2nd and 3rd columns are not being used in CellBox.
+* `loo_label.csv`: An archived csv file that stores the actual indexing of perturbation targets, used in the original paper. There are 89 rows corresponding to 89 drug combinations. On each row, two numbers denote the index of one of 12 drugs for that combination. Number 0 denotes no drug, meaning rows with 0 denote single-target drugs.
 * `expr.csv`: Protein expression data from RPPA for the protein nodes and phenotypic node values. Each row is a condition while each column is a node.
 * `pert.csv`: Perturbation strength and target of all perturbation conditions. Used as input for differential equations.
+* `expr_subset.npz` and `pert_subset.npz`: A subset of `expr.csv` and `pert.csv` (clarification needed).
 
 ## cellbox package:
-* `CellBox` is defined in model.py
-* A dataset factory function for random parition and leave one out tasks
-* Some training util functions in tensorflow
+* `CellBox` is defined in `model.py`
+* A `dataset.factory()` function for random parition, leave-one-out, and single-to-combo tasks.
+* A multiple-substage training process for finding the optimal hyperparameters defined in `train.py`.
 
 ## One click model construction
 
 ### __Step 1: Create experiment json files (some examples can be found under ./configs/)__
 * Make sure to specify the experiment_id and experiment_type
 	* `experiment_id`: name of the experiments, would be used to generate results folders
-	* `experiment_type`: currently available tasks are {"random partition", "leave one out (w/o single)", "leave one out (w/ single)", "full data", "single to combo"]}
+	* `experiment_type`: currently available tasks are {"random partition", "leave one out (w/o single)", "leave one out (w/ single)", "full data", "single to combo"}
 * Different training stages can be specified using `stages` and `sub_stages` in config file
+* Other default configurations are defined in `config.py`
 
 ### __Step 2: Use main.py to construct models using random partition of dataset__
 
@@ -109,7 +123,7 @@ When training with leave-one-out validation, make sure to specify the drug index
 
 
 ### __Step 3: Analyze result files__
-* You should see a experiment folder generated under results using the date and `experiment_id`.
+* You should see a experiment folder generated under `/results` using the date and `experiment_id`.
 * Under experiment folder, you would see different models run with different random seeds
 * Under each model folder, you would have:
 	* `record_eval.csv`: log file with loss changes and time used.

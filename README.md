@@ -57,7 +57,7 @@ pip install .
 If you only want to install CellBox from a particular branch, the following command will install cellbox from a particular branch using the '@' notation:
 
 ```
-pip install git+https://github.com/dfci/CellBox.git@cell_systems_final#egg=cellbox\&subdirectory=cellbox
+pip install git+https://github.com/sanderlab/CellBox.git@cell_systems_final#egg=cellbox\&subdirectory=cellbox
 ```
 
 ## Install using setup.py (setup.py install has been deprecated in newer Python versions)
@@ -82,7 +82,7 @@ cellbox.VERSION
 These data files are used for generating the results from the official CellBox paper. Replace these files with your own data.
 * `node_index.csv`: names of each protein/phenotypic node.
 * `expr_index.txt`: information each perturbation condition. This is one of the original data files we downloaded from [paper](https://elifesciences.org/articles/04640) and is only used here as a reference for the condition names. In other words the 2nd and 3rd columns are not being used in CellBox.
-* `loo_label.csv`: An archived csv file that stores the actual indexing of perturbation targets, used in the original paper. There are 89 rows corresponding to 89 drug combinations. On each row, two numbers denote the index of one of 12 drugs for that combination. Number 0 denotes no drug, meaning rows with 0 denote single-target drugs.
+* `loo_label.csv`: A deprecated csv file that stores the actual indexing of perturbation targets, used in the original paper. There are 89 rows corresponding to 89 drug combinations. On each row, two numbers denote the index of one of 12 drugs for that combination. Number 0 denotes no drug, meaning rows with 0 denote single-target drugs.
 * `expr.csv`: Protein expression data from RPPA for the protein nodes and phenotypic node values. Each row is a condition while each column is a node.
 * `pert.csv`: Perturbation strength and target of all perturbation conditions. Used as input for differential equations.
 * `expr_subset.npz` and `pert_subset.npz`: A subset of `expr.csv` and `pert.csv` (clarification needed).
